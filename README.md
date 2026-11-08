@@ -13,7 +13,8 @@ workflows and industries can share the same inference and validation path.
 
 > **Release status:** functioning rules demo, optional HF inference, and a training/evaluation
 > pipeline. No fine-tuned weights are bundled. The published results below are actual
-> rules-baseline runs; Qwen base and fine-tuned results have not been run.
+> rules-baseline runs and a real Qwen base-model challenge run. Full fine-tuned results
+> are published only when the local experiment completes; never infer them from training loss.
 
 ![AeroLM charter extraction workspace, running the CPU rules baseline](docs/assets/workspace.png)
 
@@ -152,9 +153,47 @@ rules baseline; its very high rules score should be read in that context. See th
 
 ## Training methodology
 
-Use Linux or WSL2 with a compatible NVIDIA CUDA GPU for training. The CPU demo works
-natively on Windows, Linux, or macOS. Training fails explicitly when CUDA is unavailable.
+Use Linux or WSL2 with a compatible NVIDIA CUDA GPU for the GPU recipes. Explicit CPU
+LoRA is also supported with `configs/cpu-lora.toml`; GPU recipes still fail when CUDA
+is unavailable. The CPU demo works natively on Windows, Linux, or macOS.
 No cloud training, paid service, or automatic model publication is used.
+
+### Full local CPU experiment
+
+The CPU recipe trains Qwen3-0.6B on 1,000 synthetic requests for three epochs, using
+120 validation requests and 120 template-held-out test requests. BF16 is explicit and
+requires an efficient BF16 CPU implementation; use float32 on other CPUs. The reference
+Ryzen 9 9950X profile took roughly 2.5–3 seconds per training example, so budget multiple
+hours for training plus generation-based evaluations. This is a throughput profile,
+not a completed fine-tuning or extraction result.
+
+```sh
+uv sync --frozen --extra ml --extra dev
+uv run --no-sync python scripts/run_local_experiment.py --activate
+```
+
+The runner records progress in `artifacts/full-cpu/experiment.json` and
+`artifacts/full-cpu/adapter/progress.jsonl`. It saves resumable checkpoints every 25
+optimizer steps, then evaluates base and adapter models on the full generated test set
+and the unchanged challenge set. Both evaluations use the same pinned model revision,
+BF16 CPU precision, 12 CPU threads, prompt, and greedy decoding. Completed matching
+phases can be reused when restarting the command; changed data/configs are rejected.
+
+In another terminal, check status without loading the model:
+
+```sh
+python scripts/experiment_status.py
+```
+
+Completed reports and raw predictions go to `benchmarks/results/`, with the measured
+comparison in `artifacts/full-cpu/comparison.json`. `--activate` writes an ignored local
+`.env` selecting the adapter only after training/evaluation finish and a real demo
+extraction passes schema validation. Existing unrelated `.env` values are preserved.
+No trained weights are committed or uploaded. The CPU trainer can omit expensive token
+entropy/accuracy logging while preserving the identical supervised objective; held-out
+extraction metrics remain the quality measure.
+
+### CUDA LoRA / QLoRA
 
 ```sh
 uv sync --frozen --extra ml --extra cuda --extra dev
@@ -228,8 +267,13 @@ not Qwen performance or a fine-tuning improvement claim.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Rules / template holdout | 120 | 99.93% | 99.67% | 99.80% | 100% | 100% | 95.83% |
 | Rules / authored challenge | 24 | 98.37% | 90.98% | 94.53% | 100% | 100% | 70.83% |
-| Qwen3-0.6B base | — | Not run | Not run | Not run | Not run | Not run | Not run |
+| Qwen3-0.6B base / authored challenge | 24 | 0% | 0% | 0% | 0% | 0% | 0% |
 | Qwen3-0.6B + LoRA/QLoRA | — | Not run | Not run | Not run | Not run | Not run | Not run |
+
+The base model wrapped its outputs in Markdown code fences and also made schema/fact
+errors, including invented services and invalid field types. The evaluator rejects
+those raw outputs; its zero strict score does not mean the model recognized no facts.
+No JSON repair was applied to improve the score.
 
 Reports and per-request raw predictions are committed in [benchmarks/results](benchmarks/results).
 Formatting validity is expected to be perfect for rules, which serializes a Pydantic model;

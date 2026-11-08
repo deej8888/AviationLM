@@ -24,7 +24,16 @@ the random test model's missing upstream config location. Neither affected asser
 Desktop and mobile test screenshots were inspected; the README image is an actual
 CPU-demo capture, not a mockup.
 
-**Not executed:** pretrained Qwen extraction benchmarks, GPU LoRA/QLoRA training,
-Unsloth runtime, Docker image builds/runtime, and remote GitHub Actions. Docker is not
-installed locally. CI configuration includes CPU container smoke tests and a separate
-random-weight ML integration job, but this record does not claim those remote jobs ran.
+After publication, [GitHub Actions run 42504287236](https://github.com/deej8888/AviationLM/actions/runs/42504287236)
+completed successfully: all three Python jobs, ML smoke test, dashboard tests/build,
+and CPU container build/runtime smoke tests passed. Docker remains unavailable locally.
+
+The real pinned Qwen3-0.6B checkpoint has now been downloaded. A 24-case challenge
+evaluation ran on CPU BF16: all raw responses failed strict JSON validation. Reports
+and raw outputs are committed; this is a measured base-model result. CPU LoRA profiles
+on pretrained weights also completed, verifying the full training/save path. Those
+profiles are throughput checks, not full-run extraction benchmarks.
+
+**Not yet executed:** full-run adapter evaluation, GPU LoRA/QLoRA training, and Unsloth
+runtime. A full CPU training/evaluation runner is provided; only completed reports
+count as fine-tuned benchmark evidence.
