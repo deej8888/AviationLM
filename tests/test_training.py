@@ -77,3 +77,25 @@ def test_resume_rejects_changed_recipe(tmp_path):
     validate_resume(tmp_path, str(checkpoint), "original", {"seed": 42})
     with pytest.raises(ValueError, match="original config"):
         validate_resume(tmp_path, str(checkpoint), "changed", {"seed": 42})
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"load_in_4bit": True},
+        {"backend": "unsloth"},
+        {"precision": "float16"},
+    ],
+)
+def test_cpu_training_rejects_unsupported_modes(changes):
+    config = tomllib.loads(Path("configs/cpu-lora.toml").read_text())
+    with pytest.raises(ValidationError, match="CPU training supports"):
+        TrainingConfig.model_validate({**config, **changes})
+
+
+def test_cpu_recipe_is_explicit_and_preserves_cuda_defaults():
+    config = TrainingConfig.model_validate(tomllib.loads(Path("configs/cpu-lora.toml").read_text()))
+    assert config.device == "cpu" and config.precision == "bfloat16"
+    assert not config.load_in_4bit and not config.gradient_checkpointing
+    cuda = TrainingConfig.model_validate(tomllib.loads(Path("configs/qlora.toml").read_text()))
+    assert cuda.device == "cuda" and cuda.load_in_4bit

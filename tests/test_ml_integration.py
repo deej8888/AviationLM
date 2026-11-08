@@ -9,12 +9,14 @@ pytest.importorskip("peft")
 
 
 @pytest.mark.ml
-def test_real_completion_masking_and_lora_update(tmp_path):
+@pytest.mark.parametrize("loss_only", [False, True])
+def test_real_completion_masking_and_lora_update(tmp_path, loss_only):
     from datasets import Dataset
     from peft import LoraConfig, PeftModel
     from tokenizers import Tokenizer, models, pre_tokenizers, trainers
     from transformers import PreTrainedTokenizerFast, Qwen3Config, Qwen3ForCausalLM
     from trl import SFTConfig, SFTTrainer
+    from aerolm.trainer import LossOnlySFTTrainer
 
     torch.set_num_threads(2)
     tokenizer_core = Tokenizer(models.WordLevel(unk_token="[UNK]"))
@@ -45,7 +47,7 @@ def test_real_completion_masking_and_lora_update(tmp_path):
     dataset = Dataset.from_list(
         [{"prompt": "Extract charter TEB to MIA 6 pax.", "completion": '{"passengers":6}[EOS]'}]
     )
-    trainer = SFTTrainer(
+    trainer = (LossOnlySFTTrainer if loss_only else SFTTrainer)(
         model=model,
         processing_class=tokenizer,
         train_dataset=dataset,
@@ -72,6 +74,9 @@ def test_real_completion_masking_and_lora_update(tmp_path):
     labels = batch["labels"][0]
     assert (labels == -100).any() and (labels != -100).any()
     assert labels[0].item() == -100  # prompt tokens do not contribute to loss
+    expected = trainer.model(**batch).loss.detach()
+    measured = trainer.compute_loss(trainer.model, dict(batch)).detach()
+    torch.testing.assert_close(measured, expected)
     before = {
         key: value.detach().clone()
         for key, value in trainer.model.named_parameters()
