@@ -1,20 +1,28 @@
 # Benchmark log
 
-The committed numbers were **actually computed locally on November 8, 2026**. No pretrained
-Qwen extraction evaluation or GPU fine-tuning was performed. The rules backend is a
+The committed numbers were **actually computed locally on November 8, 2026**. No GPU
+fine-tuning was performed. A real CPU Qwen base-model challenge run is now included. The rules backend is a
 hand-written pattern baseline, not an LM.
 
 | Run | N | Precision | Recall | F1 | JSON validity | Schema validity | Exact record |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | `rules-generated` | 120 | 99.9338% | 99.6697% | 99.8016% | 100% | 100% | 95.8333% |
 | `rules-challenge` | 24 | 98.3740% | 90.9774% | 94.5313% | 100% | 100% | 70.8333% |
-| Qwen3 base | — | Not run | Not run | Not run | Not run | Not run | Not run |
+| Qwen3-0.6B base / challenge | 24 | 0% | 0% | 0% | 0% | 0% | 0% |
 | Qwen3 + adapter | — | Not run | Not run | Not run | Not run | Not run | Not run |
 
 Machine-readable reports and raw predictions: [`results/`](results/).
 Each report records the dataset SHA-256, sample count, prompt hash, package versions,
 platform, generation configuration, per-field metrics, and runtime latency. Latencies
 are measured after model loading and are not intended as cross-machine comparisons.
+
+The Qwen base run used pinned revision `c1899de289a04d12100db370d81485cdf75e47ca`,
+BF16 inference on the Ryzen CPU, 12 threads, non-thinking mode and greedy decoding.
+Every raw response contained Markdown fences; examples also copied schema constraints
+as values, invented requirements, and put extra fields inside legs. Strict validation
+rejected the outputs. The zero score is an interface-contract result, not evidence that
+no individual aviation facts were recognized. No repair was performed. Full adapter
+results remain unreported until an actual completed evaluation exists.
 
 ## Protocol
 
