@@ -1,0 +1,24 @@
+services:
+  api:
+    build: .
+    ports: ["127.0.0.1:8000:8000"]
+    environment:
+      AEROLM_BACKEND: rules
+      AEROLM_API_KEY: ${AEROLM_API_KEY:-}
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+  web:
+    build: ./web
+    ports: ["127.0.0.1:3000:3000"]
+    environment:
+      AEROLM_API_URL: http://api:8000
+      AEROLM_API_KEY: ${AEROLM_API_KEY:-}
+    depends_on:
+      api:
+        condition: service_healthy
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
