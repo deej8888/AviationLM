@@ -31,6 +31,14 @@ class HuggingFaceBackend:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         if device == "cuda" and not torch.cuda.is_available():
             raise RuntimeError("CUDA requested but unavailable")
+        if device == "cpu" and settings.precision == "float16":
+            raise ValueError("Use float32 or bfloat16 on CPU")
+        if device == "cpu" and settings.cpu_threads is not None:
+            torch.set_num_threads(settings.cpu_threads)
+        precision = settings.precision
+        if precision == "auto":
+            precision = "float32" if device == "cpu" else "float16"
+        self.precision = precision
         revision = settings.model_revision
         if self.adapter_path:
             manifest_path = Path(self.adapter_path) / "run_manifest.json"
@@ -54,7 +62,7 @@ class HuggingFaceBackend:
             self.model_id,
             revision=revision,
             trust_remote_code=False,
-            torch_dtype=torch.float32 if device == "cpu" else torch.float16,
+            dtype=getattr(torch, precision),
         ).to(device)
         if self.adapter_path:
             from peft import PeftModel

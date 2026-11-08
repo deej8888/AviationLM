@@ -10,6 +10,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
+from typing import Callable
 
 from aerolm.core import Backend
 from aerolm.domains.registry import registry
@@ -66,9 +67,18 @@ def load_rows(path: Path) -> list[dict]:
     return rows
 
 
-def evaluate(backend: Backend, dataset: Path, output: Path, label: str | None = None) -> dict:
+def evaluate(
+    backend: Backend,
+    dataset: Path,
+    output: Path,
+    label: str | None = None,
+    on_progress: Callable[[int, int, dict], None] | None = None,
+) -> dict:
     spec = registry.get("charter")
     rows = load_rows(dataset)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    partial = output.with_suffix(".predictions.partial.jsonl")
+    partial.write_text("", encoding="utf-8")
     totals = Counter(tp=0, fp=0, fn=0)
     fields: dict[str, Counter] = {}
     predictions, latencies = [], []
@@ -113,6 +123,10 @@ def evaluate(backend: Backend, dataset: Path, output: Path, label: str | None = 
                 "fn": len(fn),
             }
         )
+        with partial.open("a", encoding="utf-8", newline="\n") as stream:
+            stream.write(json.dumps(predictions[-1]) + "\n")
+        if on_progress:
+            on_progress(len(predictions), len(rows), predictions[-1])
     adapter = getattr(backend, "adapter_path", None)
     adapter_hashes = {}
     if adapter:
@@ -133,6 +147,11 @@ def evaluate(backend: Backend, dataset: Path, output: Path, label: str | None = 
         "model_id": getattr(backend, "model_id", None),
         "model_revision": getattr(backend, "resolved_revision", None),
         "adapter_loaded": bool(adapter),
+        "inference": {
+            "device": str(backend.model.device) if hasattr(backend, "model") else "cpu",
+            "precision": getattr(backend, "precision", None),
+            "cpu_threads": getattr(getattr(backend, "settings", None), "cpu_threads", None),
+        },
         "adapter_hashes": adapter_hashes,
         "dataset": {"name": dataset.name, "sha256": sha256(dataset), "count": len(rows)},
         "prompt_sha256": hashlib.sha256(
@@ -171,7 +190,10 @@ def evaluate(backend: Backend, dataset: Path, output: Path, label: str | None = 
     output.with_suffix(".predictions.jsonl").write_text(
         "".join(json.dumps(row) + "\n" for row in predictions), encoding="utf-8", newline="\n"
     )
-    output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
+    temporary = output.with_suffix(".tmp")
+    temporary.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
+    temporary.replace(output)
+    partial.unlink()
     return report
 
 
@@ -180,6 +202,8 @@ def compare_reports(baseline: Path, tuned: Path) -> dict:
     for key in ("dataset", "prompt_sha256", "model_id", "model_revision", "generation"):
         if base[key] != adapter[key]:
             raise ValueError(f"Comparison requires identical {key}")
+    if base.get("inference") != adapter.get("inference"):
+        raise ValueError("Comparison requires identical inference device and precision")
     if base["backend"] != "hf" or adapter["backend"] != "hf":
         raise ValueError("Base vs tuned comparison requires two HF model runs")
     if base["adapter_loaded"] or not adapter["adapter_loaded"]:

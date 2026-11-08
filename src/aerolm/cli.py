@@ -32,6 +32,8 @@ def evaluate_command(
     model_id: str = "Qwen/Qwen3-0.6B",
     revision: str = "main",
     device: str = "cpu",
+    precision: str = "auto",
+    cpu_threads: int | None = None,
     adapter: Path | None = None,
     label: str | None = None,
 ):
@@ -41,6 +43,8 @@ def evaluate_command(
         model_id=model_id,
         model_revision=revision,
         device=device,
+        precision=precision,
+        cpu_threads=cpu_threads,
         adapter_path=str(adapter) if adapter else None,
     )
     if backend == "rules":
@@ -51,7 +55,14 @@ def evaluate_command(
         from aerolm.backends.huggingface import HuggingFaceBackend
 
         engine = HuggingFaceBackend(settings)
-    report = evaluate(engine, dataset, output, label)
+
+    def progress(index: int, total: int, sample: dict):
+        typer.echo(
+            f"[{index}/{total}] {sample['id']}: {sample['latency_ms'] / 1000:.1f}s, schema_valid={sample['schema_valid']}",
+            err=True,
+        )
+
+    report = evaluate(engine, dataset, output, label, on_progress=progress)
     typer.echo(json.dumps(report["metrics"], indent=2))
 
 
@@ -69,7 +80,7 @@ def train_command(
     max_steps: int = -1,
     resume: str | None = None,
 ):
-    """Fine-tune on CUDA using Transformers/PEFT or Unsloth."""
+    """Fine-tune with explicit CPU LoRA or CUDA LoRA/QLoRA settings."""
     from aerolm.training import train
 
     result = train(config, data, output, max_steps, resume)

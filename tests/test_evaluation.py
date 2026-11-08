@@ -61,3 +61,35 @@ def test_compare_refuses_different_test_sets(tmp_path):
     (tmp_path / "tuned.json").write_text(json.dumps({**base, "dataset": {"sha256": "b"}}))
     with pytest.raises(ValueError, match="identical dataset"):
         compare_reports(tmp_path / "base.json", tmp_path / "tuned.json")
+
+
+def test_progress_reports_every_measured_sample(tmp_path):
+    generate_dataset(tmp_path, train=2, validation=2, test=2)
+    progress = []
+    evaluate(
+        RulesBackend(),
+        tmp_path / "test.jsonl",
+        tmp_path / "report.json",
+        on_progress=lambda index, total, sample: progress.append((index, total, sample["id"])),
+    )
+    assert progress == [(1, 2, "test-00000"), (2, 2, "test-00001")]
+
+
+def test_interrupted_evaluation_preserves_predictions_without_claiming_completion(tmp_path):
+    generate_dataset(tmp_path, train=2, validation=2, test=2)
+
+    class FailingBackend(RulesBackend):
+        calls = 0
+
+        def generate(self, text, domain):
+            self.calls += 1
+            if self.calls == 2:
+                raise RuntimeError("runtime failure")
+            return super().generate(text, domain)
+
+    output = tmp_path / "report.json"
+    with pytest.raises(RuntimeError, match="runtime failure"):
+        evaluate(FailingBackend(), tmp_path / "test.jsonl", output)
+    assert not output.exists()
+    partial = output.with_suffix(".predictions.partial.jsonl")
+    assert len(partial.read_text().splitlines()) == 1
