@@ -1,0 +1,17 @@
+# CUDA training/inference image; requires NVIDIA Container Toolkit on the host.
+FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-runtime
+COPY --from=ghcr.io/astral-sh/uv:0.11.32 /uv /uvx /bin/
+WORKDIR /app
+COPY pyproject.toml uv.lock README.md LICENSE ./
+COPY src ./src
+COPY configs ./configs
+COPY benchmarks ./benchmarks
+COPY data ./data
+RUN uv export --frozen --extra ml --extra cuda --no-dev --no-emit-project --output-file /tmp/requirements.txt \
+    && uv pip install --system --require-hashes -r /tmp/requirements.txt \
+    && uv pip install --system --no-deps . && useradd --create-home --uid 10001 aerolm \
+    && mkdir -p /app/artifacts /home/aerolm/.cache && chown -R aerolm:aerolm /app /home/aerolm
+USER aerolm
+ENV PYTHONUNBUFFERED=1 HF_HOME=/home/aerolm/.cache/huggingface
+EXPOSE 8000
+CMD ["uvicorn", "aerolm.api:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
