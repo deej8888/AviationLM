@@ -1,0 +1,12 @@
+backend = "unsloth"
+model_id = "Qwen/Qwen3-0.6B"
+revision = "c1899de289a04d12100db370d81485cdf75e47ca"
+seed = 42
+load_in_4bit = true
+max_length = 3072
+lora_r = 16
+lora_alpha = 32
+epochs = 3
+learning_rate = 0.0002
+batch_size = 1
+gradient_accumulation_steps = 8
