@@ -5,8 +5,8 @@ uv 0.11.32, and the committed dependency locks.
 
 | Check | Observed result |
 | --- | --- |
-| `uv run --no-sync pytest` with ML dependencies installed | 37 passed |
-| `uv run --no-sync python scripts/verify_benchmarks.py` | Both committed reports reproduced exactly for scores, fields, prompt and dataset hashes |
+| `uv run --no-sync pytest` with ML/structured dependencies installed | 55 passed |
+| `uv run --no-sync python scripts/verify_benchmarks.py` | All 11 reports audited: rules regenerated; stored model outputs rescored; aggregate/per-request counts and dataset/prompt hashes matched |
 | `uv build` | Source distribution and wheel built successfully |
 | `npm run build` in `web/` | Next.js production build and TypeScript checks passed |
 | `npm run test:e2e` in `web/` | 8 passed, desktop and mobile Chromium, using the actual local API |
@@ -52,3 +52,27 @@ or verify an already-running HTTP server has reloaded its configuration.
 
 **Not yet executed:** GPU LoRA/QLoRA training and Unsloth runtime. No real-world email
 evaluation or production deployment was performed. Weights remain local.
+
+## Second experiment validation
+
+The 240-example, one-epoch v2 pilot completed training and all five validation runs
+(rules, raw base, prompted/constrained base, original adapter, new adapter). Exact inputs,
+training manifest/config, reports, and raw outputs are committed. The new adapter scored
+95.9128% F1 and 19/24 exact requests on those new validation cases; it still had one
+schema failure. The 300-request test set was not evaluated and full v2 training did not run.
+
+Generator 2.0 had process-dependent evidence-list ordering. Version 2.1 sorts it;
+cross-process tests use different Python hash seeds, and another test verifies that
+archived pilot emails/labels match the current generator. Frozen source bytes and
+historical hashes are retained rather than silently changing the original run record.
+
+New checks cover dataset omissions/ledgers, strict evidence rejection, contradictory
+mentions, few-shot prompting, null-slot metrics, experiment locking, and frozen adapter
+metadata. A real tiny random model also generates JSON through the constrained decoder
+without downloads. This supplies no extraction benchmark score.
+
+Next.js production build/TypeScript checks and all eight desktop/mobile browser tests
+passed. The benchmark table's new metrics and mobile horizontal scrolling were checked;
+desktop/mobile screenshots were inspected. Browser tests use isolated ports and an
+explicit rules backend, independently of a developer's activated adapter. The updated
+GPU dependency export succeeded; Docker/GPU runtime remains untested locally.

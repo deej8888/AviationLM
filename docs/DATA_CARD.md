@@ -1,5 +1,12 @@
 # AeroLM charter data card
 
+The original version-1 generator and published benchmark inputs remain unchanged.
+The separate [v2 experiment](EXPERIMENT_V2.md) adds a 2,000/200/300 dataset with missing
+fields, corrections, negation, multi-leg requests, empty requests, and a gold evidence
+ledger. `aerolm generate-v2` writes that profile to a new directory and refuses to
+overwrite an existing versioned dataset. Its construction ledger and tests are automated
+checks, not independent human annotation. The sections below describe version 1.
+
 **Version:** 1.0 · **License:** CC0-1.0 · **Source:** entirely invented, programmatic text.
 
 No company inboxes, customer itineraries, internal SOPs, proprietary code, private contact lists,

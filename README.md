@@ -194,6 +194,33 @@ No trained weights are committed or uploaded. The CPU trainer can omit expensive
 entropy/accuracy logging while preserving the identical supervised objective; held-out
 extraction metrics remain the quality measure.
 
+### Second experiment: missing facts and stronger baselines
+
+Version 2 adds sparse requests, corrections, negation, multiple legs, explicit nulls,
+source-mention review, and optional few-shot/constrained generation. Historical data,
+weights, and results are preserved. The new runner separates validation selection from
+the new 300-request test set and never activates an adapter automatically.
+
+```sh
+uv sync --frozen --extra dev --extra ml --extra structured
+uv run --no-sync python scripts/run_v2_experiment.py --stage prepare
+uv run --no-sync python scripts/run_v2_experiment.py --stage pilot
+```
+
+The pilot uses 240 training examples, one epoch, and 24 validation requests. Full
+training uses 2,000 examples for three epochs. See the [v2 experiment guide](docs/EXPERIMENT_V2.md)
+for the full/test stages, evaluation boundaries, and source-evidence limitations.
+Do not infer improved accuracy from implementing these changes; only completed model
+evaluations establish the next measured result.
+
+The first **240-example, one-epoch pilot** is complete. On 24 new validation requests,
+the v2 adapter achieved **95.91% F1 and 19/24 exact requests**, versus 63.83% and 3/24
+for the original adapter, and 82.99% and 3/24 for rules. Its schema validity was 23/24.
+These are small controlled validation results, not scores on the original challenge
+or the new 300-request test set. The [v2 guide](docs/EXPERIMENT_V2.md) includes all
+baselines, remaining failures, exact frozen inputs, and the reproducibility correction
+in generator 2.1. The full v2 training/test stages remain available to run.
+
 ### CUDA LoRA / QLoRA
 
 ```sh

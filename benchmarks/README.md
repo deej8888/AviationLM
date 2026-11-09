@@ -41,6 +41,25 @@ contain exact base-versus-adapter deltas. Weights remain local and are not bundl
 
 ## Protocol
 
+The completed first v2 pilot is documented in the [v2 measured table](../docs/EXPERIMENT_V2.md#first-measured-pilot).
+All five variants use the same 24 **validation** requests, separately from both the
+original challenge and the new 300-request test set. V2 reached 95.9128% F1 and 19/24
+exact requests; the original adapter reached 63.8298% and 3/24, and rules reached
+82.9851% and 3/24. These reports use the `v2-pilot-` prefix and preserve raw outputs.
+The full v2 training/test stages have not run.
+
+Report version 1.1 adds per-scenario counts and null-slot false-fill diagnostics without
+changing the existing slot metrics. The false-fill rate covers explicit null gold slots
+in schema-valid responses only; inspect schema validity alongside it. It does not count
+extra itinerary legs or empty-array mistakes, which remain false positives. Raw prediction
+logs identify extra and missing facts. Older reports have no value for this diagnostic;
+the dashboard displays a dash rather than inventing one.
+
+The [v2 workflow](../docs/EXPERIMENT_V2.md) evaluates on validation before freezing a
+candidate for a new test set. Prompted/constrained base-model runs are separately labeled
+and cannot be compared to raw adapters as a fine-tuning gain. Version-1 reports are kept
+intact. Only completed v2 runs should be added to the measured log.
+
 1. Use the same dataset, schema/prompt, base revision, and decoding configuration for
    base-versus-adapter evaluation. `aerolm compare` refuses mismatches.
 2. Generate **raw** model output, without JSON repair or rules fallback.

@@ -1,5 +1,10 @@
 # AeroLM model / adapter card
 
+The [second experiment](EXPERIMENT_V2.md) adds a separate data profile and validation-first
+pilot. The measured full-run figures below continue to describe the first adapter;
+implementing v2 is not evidence that its model performs better. V2 candidates are not
+automatically activated or published.
+
 **Release status:** completed experimental CPU LoRA training and evaluation on November 8,
 2026 (America/New_York). A trained adapter exists locally; weights are not bundled or
 uploaded. Reports, raw predictions, and a completed run manifest are committed.
