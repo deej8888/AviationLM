@@ -14,7 +14,8 @@ def main():
         print("Experiment has not started")
         return
     state = json.loads(state_path.read_text())
-    progress_path = args.output / "adapter/progress.jsonl"
+    adapter_path = Path(state.get("training_adapter", args.output / "adapter"))
+    progress_path = adapter_path / "progress.jsonl"
     if progress_path.exists():
         records = [
             json.loads(line) for line in progress_path.read_text().splitlines() if line.strip()

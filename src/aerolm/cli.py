@@ -24,6 +24,20 @@ def generate(
     typer.echo(json.dumps(generate_dataset(output, seed, train, validation, test), indent=2))
 
 
+@app.command("generate-v2")
+def generate_v2(
+    output: Path = Path("data/robust-v2"),
+    seed: int = 84,
+    train: int = 2000,
+    validation: int = 200,
+    test: int = 300,
+):
+    """Build a new versioned dataset with sparse, corrected and multi-leg requests."""
+    from aerolm.data.robust import generate_robust_dataset
+
+    typer.echo(json.dumps(generate_robust_dataset(output, seed, train, validation, test), indent=2))
+
+
 @app.command("evaluate")
 def evaluate_command(
     dataset: Annotated[Path, typer.Option(exists=True, dir_okay=False)],
@@ -36,6 +50,8 @@ def evaluate_command(
     cpu_threads: int | None = None,
     adapter: Path | None = None,
     label: str | None = None,
+    few_shot: Path | None = None,
+    structured: bool = False,
 ):
     """Measure raw outputs; write report and per-example predictions."""
     settings = Settings(
@@ -46,8 +62,14 @@ def evaluate_command(
         precision=precision,
         cpu_threads=cpu_threads,
         adapter_path=str(adapter) if adapter else None,
+        few_shot_path=str(few_shot) if few_shot else None,
+        structured_output=structured,
     )
     if backend == "rules":
+        if few_shot or structured:
+            raise typer.BadParameter(
+                "Prompt demonstrations and constrained decoding require --backend hf"
+            )
         if adapter:
             raise typer.BadParameter("An adapter requires --backend hf")
         engine = RulesBackend()
