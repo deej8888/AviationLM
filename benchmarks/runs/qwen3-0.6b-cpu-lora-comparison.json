@@ -1,0 +1,66 @@
+{
+  "generated": {
+    "precision": {
+      "baseline": 0.0,
+      "fine_tuned": 0.9973579920739762,
+      "delta": 0.9973579920739762
+    },
+    "recall": {
+      "baseline": 0.0,
+      "fine_tuned": 0.9973579920739762,
+      "delta": 0.9973579920739762
+    },
+    "f1": {
+      "baseline": 0.0,
+      "fine_tuned": 0.9973579920739762,
+      "delta": 0.9973579920739762
+    },
+    "json_validity": {
+      "baseline": 0.0,
+      "fine_tuned": 1.0,
+      "delta": 1.0
+    },
+    "schema_validity": {
+      "baseline": 0.0,
+      "fine_tuned": 1.0,
+      "delta": 1.0
+    },
+    "exact_match": {
+      "baseline": 0.0,
+      "fine_tuned": 0.9666666666666667,
+      "delta": 0.9666666666666667
+    }
+  },
+  "challenge": {
+    "precision": {
+      "baseline": 0.0,
+      "fine_tuned": 0.5416666666666666,
+      "delta": 0.5416666666666666
+    },
+    "recall": {
+      "baseline": 0.0,
+      "fine_tuned": 0.7819548872180451,
+      "delta": 0.7819548872180451
+    },
+    "f1": {
+      "baseline": 0.0,
+      "fine_tuned": 0.64,
+      "delta": 0.64
+    },
+    "json_validity": {
+      "baseline": 0.0,
+      "fine_tuned": 1.0,
+      "delta": 1.0
+    },
+    "schema_validity": {
+      "baseline": 0.0,
+      "fine_tuned": 0.75,
+      "delta": 0.75
+    },
+    "exact_match": {
+      "baseline": 0.0,
+      "fine_tuned": 0.0,
+      "delta": 0.0
+    }
+  }
+}
