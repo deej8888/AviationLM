@@ -1,0 +1,299 @@
+{
+  "report_version": "1.1",
+  "label": "v2-pilot-v2-raw",
+  "created_at": "2026-11-09T03:09:21.726038+00:00",
+  "backend": "hf",
+  "model_id": "Qwen/Qwen3-0.6B",
+  "model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "adapter_loaded": true,
+  "inference": {
+    "device": "cpu",
+    "precision": "bfloat16",
+    "cpu_threads": 12
+  },
+  "adapter_hashes": {
+    "adapter_config.json": "8e587698edf799444eedb8eacbf6a5448ef5757c5b4d0f7053fb5b11eb608640",
+    "adapter_model.safetensors": "67c9bebe5d8c190c68c577622014b1d68c1f2f154d303bcb1b96f7aa15c2b5f6",
+    "added_tokens.json": "79f6ec6fcc423d3a82bfac8b9033b1daac7b7bce06a5f5f441637b480cc605de",
+    "checkpoint-25\\adapter_config.json": "8e587698edf799444eedb8eacbf6a5448ef5757c5b4d0f7053fb5b11eb608640",
+    "checkpoint-25\\adapter_model.safetensors": "04fe4af37eb59c31dd039faad895c85aac69e57f2f8552c717e0c9c858e382b1",
+    "checkpoint-25\\added_tokens.json": "79f6ec6fcc423d3a82bfac8b9033b1daac7b7bce06a5f5f441637b480cc605de",
+    "checkpoint-25\\special_tokens_map.json": "890efa1686cf49870d5018b948316d11c6d9ce121a942803eeb4224dcc7db3f0",
+    "checkpoint-25\\tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "checkpoint-25\\tokenizer_config.json": "3a1306cdaf4228dc827a92649103e7e2d972f73d97fe72e09ffe3666602e6d9b",
+    "checkpoint-25\\trainer_state.json": "e5399d83afd79cf07a3b9ea09ed29cf243b2ea8e2c03b1458fca3e4ebc4a2ccb",
+    "checkpoint-25\\vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "checkpoint-30\\adapter_config.json": "8e587698edf799444eedb8eacbf6a5448ef5757c5b4d0f7053fb5b11eb608640",
+    "checkpoint-30\\adapter_model.safetensors": "67c9bebe5d8c190c68c577622014b1d68c1f2f154d303bcb1b96f7aa15c2b5f6",
+    "checkpoint-30\\added_tokens.json": "79f6ec6fcc423d3a82bfac8b9033b1daac7b7bce06a5f5f441637b480cc605de",
+    "checkpoint-30\\special_tokens_map.json": "890efa1686cf49870d5018b948316d11c6d9ce121a942803eeb4224dcc7db3f0",
+    "checkpoint-30\\tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "checkpoint-30\\tokenizer_config.json": "3a1306cdaf4228dc827a92649103e7e2d972f73d97fe72e09ffe3666602e6d9b",
+    "checkpoint-30\\trainer_state.json": "816613f9d145c6ca5e5e1625e042d4b874617223c612ae03e38b925653eeaeaf",
+    "checkpoint-30\\vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "run_manifest.json": "a4bf046aa4d902e420618ab57946f2d26b9ab527cfd762a214008d92f1b7b8d8",
+    "special_tokens_map.json": "890efa1686cf49870d5018b948316d11c6d9ce121a942803eeb4224dcc7db3f0",
+    "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "tokenizer_config.json": "3a1306cdaf4228dc827a92649103e7e2d972f73d97fe72e09ffe3666602e6d9b",
+    "trainer_state.json": "286fab1f05ff6b50e69cf3f5eee9d5c93cfdfaf0eb56084be9ffa3e6c9cab834",
+    "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+  },
+  "dataset": {
+    "name": "validation.jsonl",
+    "sha256": "1de066e594eebe8e0527f498b365a236c2d2fbac40f8110fcc130cd3d2c3b758",
+    "count": 24
+  },
+  "prompt_sha256": "22e2b5db2a5f315d7fb7882cc094eecf28cc01132b4aec15f8973930601f3bda",
+  "generation": {
+    "do_sample": false,
+    "enable_thinking": false,
+    "max_new_tokens": 1024
+  },
+  "metrics": {
+    "precision": 0.9832402234636871,
+    "recall": 0.9361702127659575,
+    "f1": 0.9591280653950954,
+    "tp": 176,
+    "fp": 3,
+    "fn": 12,
+    "json_validity": 1.0,
+    "schema_validity": 0.9583333333333334,
+    "exact_match": 0.7916666666666666
+  },
+  "per_field": {
+    "aircraft_category": {
+      "precision": 0.8,
+      "recall": 0.8,
+      "f1": 0.8000000000000002,
+      "tp": 8,
+      "fp": 2,
+      "fn": 2
+    },
+    "aircraft_preference": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 10,
+      "fp": 0,
+      "fn": 0
+    },
+    "budget": {
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1": 0.9333333333333333,
+      "tp": 7,
+      "fp": 0,
+      "fn": 1
+    },
+    "contact_email": {
+      "precision": 1.0,
+      "recall": 0.9285714285714286,
+      "f1": 0.962962962962963,
+      "tp": 13,
+      "fp": 0,
+      "fn": 1
+    },
+    "legs[].departure_date": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 16,
+      "fp": 0,
+      "fn": 0
+    },
+    "legs[].departure_time": {
+      "precision": 0.9375,
+      "recall": 0.8823529411764706,
+      "f1": 0.9090909090909091,
+      "tp": 15,
+      "fp": 1,
+      "fn": 2
+    },
+    "legs[].destination": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 21,
+      "fp": 0,
+      "fn": 0
+    },
+    "legs[].origin": {
+      "precision": 1.0,
+      "recall": 0.9565217391304348,
+      "f1": 0.9777777777777777,
+      "tp": 22,
+      "fp": 0,
+      "fn": 1
+    },
+    "legs[].time_zone": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 12,
+      "fp": 0,
+      "fn": 0
+    },
+    "passengers": {
+      "precision": 1.0,
+      "recall": 0.95,
+      "f1": 0.9743589743589743,
+      "tp": 19,
+      "fp": 0,
+      "fn": 1
+    },
+    "return_date": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 5,
+      "fp": 0,
+      "fn": 0
+    },
+    "special_requirements": {
+      "precision": 1.0,
+      "recall": 0.8235294117647058,
+      "f1": 0.9032258064516129,
+      "tp": 14,
+      "fp": 0,
+      "fn": 3
+    },
+    "trip_type": {
+      "precision": 1.0,
+      "recall": 0.9333333333333333,
+      "f1": 0.9655172413793104,
+      "tp": 14,
+      "fp": 0,
+      "fn": 1
+    }
+  },
+  "diagnostics": {
+    "false_filled_null_slots": 0,
+    "null_slots_in_schema_valid_gold": 111,
+    "requests_with_extra_facts": 3,
+    "scored_schema_valid_requests": 23,
+    "total_requests": 24,
+    "null_slot_false_fill_rate": 0.0,
+    "scope": "Null-slot diagnostics score schema-valid outputs only; inspect validity alongside them."
+  },
+  "scenarios": {
+    "ambiguous": {
+      "requests": 3,
+      "json_valid": 3,
+      "schema_valid": 3,
+      "exact_match": 3,
+      "tp": 17,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "complete": {
+      "requests": 5,
+      "json_valid": 5,
+      "schema_valid": 5,
+      "exact_match": 3,
+      "tp": 53,
+      "fp": 1,
+      "fn": 2,
+      "precision": 0.9814814814814815,
+      "recall": 0.9636363636363636,
+      "f1": 0.9724770642201834
+    },
+    "correction": {
+      "requests": 2,
+      "json_valid": 2,
+      "schema_valid": 2,
+      "exact_match": 2,
+      "tp": 14,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "empty": {
+      "requests": 2,
+      "json_valid": 2,
+      "schema_valid": 2,
+      "exact_match": 2,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "multi_leg": {
+      "requests": 2,
+      "json_valid": 2,
+      "schema_valid": 2,
+      "exact_match": 1,
+      "tp": 30,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0.967741935483871,
+      "recall": 0.967741935483871,
+      "f1": 0.967741935483871
+    },
+    "negation": {
+      "requests": 2,
+      "json_valid": 2,
+      "schema_valid": 2,
+      "exact_match": 2,
+      "tp": 13,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "sparse": {
+      "requests": 6,
+      "json_valid": 6,
+      "schema_valid": 5,
+      "exact_match": 4,
+      "tp": 29,
+      "fp": 1,
+      "fn": 9,
+      "precision": 0.9666666666666667,
+      "recall": 0.7631578947368421,
+      "f1": 0.8529411764705883
+    },
+    "unknown_aircraft": {
+      "requests": 2,
+      "json_valid": 2,
+      "schema_valid": 2,
+      "exact_match": 2,
+      "tp": 20,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "latency_ms": {
+    "median": 5977.180949994363,
+    "mean": 5898.987483332651,
+    "p95": 6853.566400008276,
+    "includes_model_load": false
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "aerolm": "0.1.0",
+      "pydantic": "2.14.3",
+      "torch": "2.9.1",
+      "transformers": "4.57.6",
+      "peft": "0.18.1",
+      "trl": "0.24.0"
+    }
+  },
+  "limitations": [
+    "Synthetic evaluation only; not evidence of real-world dispatch accuracy.",
+    "Invalid schema outputs receive no slot credit.",
+    "No null/empty true-negative credit; leg order is significant."
+  ]
+}
