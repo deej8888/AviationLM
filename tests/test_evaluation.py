@@ -93,3 +93,28 @@ def test_interrupted_evaluation_preserves_predictions_without_claiming_completio
     assert not output.exists()
     partial = output.with_suffix(".predictions.partial.jsonl")
     assert len(partial.read_text().splitlines()) == 1
+
+
+def test_abstention_diagnostics_separate_fabricated_nulls_from_wrong_values(tmp_path):
+    row = {
+        "id": "sparse",
+        "text": "TEB to MIA, six pax.",
+        "scenario": "sparse",
+        "expected": {"passengers": 6, "contact_email": None, "legs": []},
+        "provenance": "synthetic",
+        "license": "CC0-1.0",
+    }
+    dataset = tmp_path / "data.jsonl"
+    dataset.write_text(json.dumps(row) + "\n")
+
+    class Hallucinating:
+        name = "test"
+
+        def generate(self, text, domain):
+            return '{"passengers":8,"contact_email":"invented@sample.example"}'
+
+    report = evaluate(Hallucinating(), dataset, tmp_path / "result.json")
+    assert report["metrics"]["fp"] == 2 and report["metrics"]["fn"] == 1
+    assert report["diagnostics"]["false_filled_null_slots"] == 1
+    assert report["diagnostics"]["null_slot_false_fill_rate"] == 1
+    assert report["scenarios"]["sparse"]["requests"] == 1

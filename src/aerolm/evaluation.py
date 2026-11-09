@@ -52,6 +52,22 @@ def metrics(tp: int, fp: int, fn: int) -> dict:
     }
 
 
+def null_paths(value: dict, path: str = "") -> set[str]:
+    """Explicit null slots only; absent itinerary legs are not a bounded slot inventory."""
+    paths = set()
+    for key, item in value.items():
+        name = f"{path}.{key}" if path else key
+        if item is None:
+            paths.add(name)
+        elif isinstance(item, dict):
+            paths |= null_paths(item, name)
+        elif isinstance(item, list):
+            for index, entry in enumerate(item):
+                if isinstance(entry, dict):
+                    paths |= null_paths(entry, f"{name}[{index}]")
+    return paths
+
+
 def load_rows(path: Path) -> list[dict]:
     rows = [
         json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
@@ -83,6 +99,10 @@ def evaluate(
     fields: dict[str, Counter] = {}
     predictions, latencies = [], []
     valid_json = valid_schema = exact = 0
+    diagnostics = Counter(
+        false_filled_null_slots=0, null_slots_in_schema_valid_gold=0, requests_with_extra_facts=0
+    )
+    scenarios: dict[str, Counter] = {}
     for row in rows:
         start = perf_counter()
         # Backend/runtime failures stop the run; they are not silently scored as model mistakes.
@@ -105,6 +125,24 @@ def evaluate(
         expected = facts(row["expected"])
         predicted = facts(parsed) if schema_ok else set()
         tp, fp, fn = predicted & expected, predicted - expected, expected - predicted
+        nulls = null_paths(row["expected"])
+        filled_nulls = sum(path in nulls for path, _ in predicted)
+        if schema_ok:
+            diagnostics.update(
+                false_filled_null_slots=filled_nulls,
+                null_slots_in_schema_valid_gold=len(nulls),
+                requests_with_extra_facts=bool(fp),
+            )
+        scenario = scenarios.setdefault(row.get("scenario", "unclassified"), Counter())
+        scenario.update(
+            requests=1,
+            json_valid=int(json_ok),
+            schema_valid=int(schema_ok),
+            exact_match=int(schema_ok and predicted == expected),
+            tp=len(tp),
+            fp=len(fp),
+            fn=len(fn),
+        )
         totals.update(tp=len(tp), fp=len(fp), fn=len(fn))
         exact += schema_ok and predicted == expected
         for key, group in (("tp", tp), ("fp", fp), ("fn", fn)):
@@ -121,6 +159,9 @@ def evaluate(
                 "tp": len(tp),
                 "fp": len(fp),
                 "fn": len(fn),
+                "false_filled_null_slots": filled_nulls,
+                "extra_facts": sorted(fp),
+                "missing_facts": sorted(fn),
             }
         )
         with partial.open("a", encoding="utf-8", newline="\n") as stream:
@@ -140,7 +181,7 @@ def evaluate(
         except importlib.metadata.PackageNotFoundError:
             pass
     report = {
-        "report_version": "1.0",
+        "report_version": "1.1",
         "label": label or backend.name,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "backend": backend.name,
@@ -155,7 +196,10 @@ def evaluate(
         "adapter_hashes": adapter_hashes,
         "dataset": {"name": dataset.name, "sha256": sha256(dataset), "count": len(rows)},
         "prompt_sha256": hashlib.sha256(
-            json.dumps(spec.messages(""), sort_keys=True).encode()
+            json.dumps(
+                backend.messages(spec, "") if hasattr(backend, "messages") else spec.messages(""),
+                sort_keys=True,
+            ).encode()
         ).hexdigest(),
         "generation": {
             "do_sample": False,
@@ -169,6 +213,22 @@ def evaluate(
             "exact_match": exact / len(rows),
         },
         "per_field": {name: metrics(**counts) for name, counts in sorted(fields.items())},
+        "diagnostics": {
+            **diagnostics,
+            "scored_schema_valid_requests": valid_schema,
+            "total_requests": len(rows),
+            "null_slot_false_fill_rate": (
+                diagnostics["false_filled_null_slots"]
+                / diagnostics["null_slots_in_schema_valid_gold"]
+                if diagnostics["null_slots_in_schema_valid_gold"]
+                else None
+            ),
+            "scope": "Null-slot diagnostics score schema-valid outputs only; inspect validity alongside them.",
+        },
+        "scenarios": {
+            name: {**counts, **metrics(counts["tp"], counts["fp"], counts["fn"])}
+            for name, counts in sorted(scenarios.items())
+        },
         "latency_ms": {
             "median": statistics.median(latencies),
             "mean": statistics.mean(latencies),
@@ -186,6 +246,8 @@ def evaluate(
             "No null/empty true-negative credit; leg order is significant.",
         ],
     }
+    if getattr(getattr(backend, "settings", None), "structured_output", False):
+        report["generation"]["structured_output"] = "lm-format-enforcer-0.11.3"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.with_suffix(".predictions.jsonl").write_text(
         "".join(json.dumps(row) + "\n" for row in predictions), encoding="utf-8", newline="\n"

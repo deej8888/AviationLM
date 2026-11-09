@@ -32,6 +32,9 @@ export function Evaluations({ reports }: { reports: Report[] }) {
                   <th>Recall</th>
                   <th>F1</th>
                   <th>JSON valid</th>
+                  <th>Schema valid</th>
+                  <th>Exact request</th>
+                  <th>Nulls filled</th>
                 </tr>
               </thead>
               <tbody>
@@ -46,6 +49,13 @@ export function Evaluations({ reports }: { reports: Report[] }) {
                     <td>{percent(report.metrics.recall)}</td>
                     <td className="f1-cell">{percent(report.metrics.f1)}</td>
                     <td>{percent(report.metrics.json_validity)}</td>
+                    <td>{percent(report.metrics.schema_validity)}</td>
+                    <td>{percent(report.metrics.exact_match)}</td>
+                    <td>
+                      {report.diagnostics?.null_slot_false_fill_rate != null
+                        ? percent(report.diagnostics.null_slot_false_fill_rate)
+                        : "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -67,6 +77,9 @@ export function Evaluations({ reports }: { reports: Report[] }) {
             Exact field-value matches determine micro precision, recall, and F1.
             Unknown values earn no credit. Invalid schema outputs receive zero
             extraction credit. JSON and schema validity are measured separately.
+            Exact request requires every fact to match. Nulls filled measures
+            false fills into explicit missing fields on schema-valid responses
+            only; lower is better. A dash means unavailable.
           </p>
         </div>
         <div className="panel info-card">

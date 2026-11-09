@@ -6,7 +6,7 @@ export default defineConfig({
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: "http://127.0.0.1:3011",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
@@ -25,15 +25,17 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "uv run uvicorn aerolm.api:app --host 127.0.0.1 --port 8000",
+      command: "uv run uvicorn aerolm.api:app --host 127.0.0.1 --port 8011",
+      env: { AEROLM_BACKEND: "rules", AEROLM_API_KEY: "", AEROLM_EVIDENCE_POLICY: "warn" },
       cwd: "..",
-      url: "http://127.0.0.1:8000/healthz",
-      reuseExistingServer: !process.env.CI,
+      url: "http://127.0.0.1:8011/healthz",
+      reuseExistingServer: false,
     },
     {
       command: "npm run dev",
-      url: "http://127.0.0.1:3000",
-      reuseExistingServer: !process.env.CI,
+      env: { PORT: "3011", AEROLM_API_URL: "http://127.0.0.1:8011" },
+      url: "http://127.0.0.1:3011",
+      reuseExistingServer: false,
     },
   ],
 });

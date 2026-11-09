@@ -53,4 +53,10 @@ export interface Report {
     schema_validity: number;
     exact_match: number;
   };
+  diagnostics?: {
+    false_filled_null_slots: number;
+    null_slots_in_schema_valid_gold: number;
+    null_slot_false_fill_rate: number | null;
+    scored_schema_valid_requests: number;
+  };
 }
