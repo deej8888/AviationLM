@@ -40,15 +40,23 @@ def main():
         pilot_manifest = Path("benchmarks/runs/v2-pilot-training.json")
         if pilot_manifest.exists():
             manifest = json.loads(pilot_manifest.read_text(encoding="utf-8"))["dataset_manifest"]
-            dataset = root / "validation.jsonl"
-            rows = generate_robust_split(
-                "validation", manifest["splits"]["validation"]["count"], manifest["seed"]
-            )
-            dataset.write_text(
-                "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
-                encoding="utf-8",
-                newline="\n",
-            )
+            if manifest["generator_version"] == "2.0":
+                # Preserve the exact pre-canonicalization pilot bytes, not a repaired report.
+                source = Path("data/experiments/v2-pilot")
+                for split in ("train", "validation", "test"):
+                    if sha256(source / f"{split}.jsonl") != manifest["splits"][split]["sha256"]:
+                        raise SystemExit(f"Archived pilot data changed: {split}")
+                dataset = source / "validation.jsonl"
+            else:
+                dataset = root / "validation.jsonl"
+                rows = generate_robust_split(
+                    "validation", manifest["splits"]["validation"]["count"], manifest["seed"]
+                )
+                dataset.write_text(
+                    "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
+                    encoding="utf-8",
+                    newline="\n",
+                )
             if sha256(dataset) != manifest["splits"]["validation"]["sha256"]:
                 raise SystemExit("Version-2 generator differs from the frozen pilot dataset")
             datasets.append(dataset)

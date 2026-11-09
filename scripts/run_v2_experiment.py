@@ -17,7 +17,7 @@ from pathlib import Path
 
 from aerolm.backends.rules import RulesBackend
 from aerolm.data.generate import sha256
-from aerolm.data.robust import generate_robust_dataset
+from aerolm.data.robust import VERSION, generate_robust_dataset
 from aerolm.domains.registry import registry
 from aerolm.evaluation import compare_reports, evaluate
 from aerolm.settings import Settings
@@ -59,7 +59,7 @@ def ensure_data(path: Path, counts: tuple[int, int, int], seed: int) -> dict:
     if not manifest_path.exists():
         generate_robust_dataset(path, seed, *counts)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("generator_version") != "2.0" or manifest["seed"] != seed:
+    if manifest.get("generator_version") != VERSION or manifest["seed"] != seed:
         raise ValueError("Existing v2 data uses a different generator or seed")
     for split, count in zip(("train", "validation", "test"), counts, strict=True):
         if manifest["splits"][split]["count"] != count:
@@ -108,7 +108,7 @@ def verify_selection(selection: dict, config: Path, data_manifest: Path, adapter
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stage", choices=["prepare", "pilot", "full", "test"], default="prepare")
-    parser.add_argument("--output", type=Path, default=Path("artifacts/robust-v2"))
+    parser.add_argument("--output", type=Path, default=Path("artifacts/robust-v2.1"))
     parser.add_argument("--config", type=Path, default=Path("configs/cpu-lora-v2.toml"))
     parser.add_argument("--previous-adapter", type=Path, default=Path("artifacts/full-cpu/adapter"))
     args = parser.parse_args()

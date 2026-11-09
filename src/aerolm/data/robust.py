@@ -15,7 +15,9 @@ from aerolm.data.generate import AIRCRAFT, AIRPORTS, sha256
 from aerolm.domains.charter import CharterRequest, FlightLeg
 from aerolm.evaluation import facts
 
-VERSION = "2.0"
+VERSION = "2.1"
+# Keep sampled facts/text identical; 2.1 only canonicalizes evidence serialization.
+CONTENT_VERSION = "2.0"
 SCENARIOS = (
     "complete",
     "sparse",
@@ -65,7 +67,7 @@ class Ledger:
         self.evidence: list[dict] = []
 
     def record(self, quote: str, values: dict) -> str:
-        for path, value in facts(values):
+        for path, value in sorted(facts(values)):
             if any(e["path"] == path and e["value"] == json.loads(value) for e in self.evidence):
                 raise ValueError(f"Duplicate gold evidence: {path}")
             self.evidence.append({"path": path, "quote": quote, "value": json.loads(value)})
@@ -114,7 +116,7 @@ def validate_ledger(row: dict) -> None:
 def generate_robust_split(split: str, count: int, seed: int) -> list[dict]:
     if split not in FAMILIES or count < 1:
         raise ValueError("Expected a known split and positive count")
-    rng = random.Random(f"aerolm:{VERSION}:{seed}:{split}")
+    rng = random.Random(f"aerolm:{CONTENT_VERSION}:{seed}:{split}")
     rows = []
     for index in range(count):
         scenario = SCENARIOS[index % len(SCENARIOS)]

@@ -1,4 +1,8 @@
 import copy
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -23,7 +27,7 @@ def test_v2_is_reproducible_and_covers_previously_always_present_fields(tmp_path
         assert observed["missing_leg_fields"][field] >= 5
     assert observed["multi_leg_requests"] == 10
     assert observed["empty_requests"] == 10
-    assert manifest["generator_version"] == "2.0"
+    assert manifest["generator_version"] == "2.1"
     with pytest.raises(ValueError, match="overwrite"):
         generate_robust_dataset(tmp_path / "a")
 
@@ -75,3 +79,26 @@ def test_v2_split_families_and_text_are_disjoint():
             assert not {r["template_family"] for r in first} & {
                 r["template_family"] for r in second
             }
+
+
+def test_dataset_bytes_are_stable_across_python_hash_seeds():
+    code = (
+        "import hashlib,json; from aerolm.data.robust import generate_robust_split; "
+        "print(hashlib.sha256(json.dumps(generate_robust_split('train',30,84)).encode()).hexdigest())"
+    )
+    hashes = [
+        subprocess.check_output(
+            [sys.executable, "-c", code], text=True, env={**os.environ, "PYTHONHASHSEED": seed}
+        ).strip()
+        for seed in ("1", "42")
+    ]
+    assert hashes[0] == hashes[1]
+
+
+def test_canonicalization_preserves_archived_pilot_model_inputs():
+    manifest, rows = load_training_data(Path("data/experiments/v2-pilot"))
+    for split, archived in rows.items():
+        current = generate_robust_split(split, len(archived), manifest["seed"])
+        for old, new in zip(archived, current, strict=True):
+            for field in ("id", "text", "expected", "scenario", "template_family"):
+                assert old[field] == new[field]
