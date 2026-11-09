@@ -71,3 +71,17 @@ def test_model_calls_do_not_queue_unboundedly():
             finally:
                 release.set()
             assert pending.result().status_code == 200
+
+
+def test_api_rejects_unverified_facts_when_service_uses_strict_evidence_policy():
+    class InventedContact:
+        name = "test"
+
+        def generate(self, text, domain):
+            return '{"contact_email":"invented@sample.example"}'
+
+    service = ExtractionService(InventedContact(), evidence_policy="reject")
+    with TestClient(create_app(Settings(api_key=""), service)) as client:
+        response = client.post("/v1/extract", json={"text": "Please advise availability."})
+        assert response.status_code == 502
+        assert "invented@sample.example" not in response.text

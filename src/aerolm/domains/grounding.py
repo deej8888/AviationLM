@@ -92,7 +92,14 @@ def source_evidence(value: BaseModel, text: str) -> list[dict]:
         for m in pax
         if (int(m[1]) if m[1].isdigit() else NUMBER_WORDS[m[1].lower()]) == data["passengers"]
     ]
-    add("passengers", data["passengers"], matches[0] if matches else None, "passenger_mention")
+    counts = {int(m[1]) if m[1].isdigit() else NUMBER_WORDS[m[1].lower()] for m in pax}
+    conflicting = len(counts) > 1
+    add(
+        "passengers",
+        data["passengers"],
+        matches[0] if matches and not conflicting else None,
+        "conflicting_passenger_mentions" if conflicting else "passenger_mention",
+    )
     trip_patterns = {
         "one_way": r"\bone[ -]way\b",
         "round_trip": r"\bround[ -]trip\b",
@@ -102,7 +109,14 @@ def source_evidence(value: BaseModel, text: str) -> list[dict]:
     add("trip_type", trip, re.search(trip_patterns[trip], text, re.I) if trip else None)
     for field in ("aircraft_preference", "budget", "contact_email"):
         candidate = data[field]
-        add(field, candidate, literal(candidate) if candidate is not None else None)
+        match = literal(candidate) if candidate is not None else None
+        if (
+            field == "contact_email"
+            and candidate is not None
+            and not re.fullmatch(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", candidate, re.I)
+        ):
+            match = None
+        add(field, candidate, match)
     category = data["aircraft_category"]
     if category:
         match = re.search(r"\b" + category.replace("_", r"[ -]") + r"\b", text, re.I)
@@ -136,5 +150,16 @@ def source_evidence(value: BaseModel, text: str) -> list[dict]:
     for requirement in data["special_requirements"]:
         pattern = aliases.get(requirement, re.escape(requirement))
         match = re.search(pattern, text, re.I)
-        add("special_requirements", requirement, match, "mention_only_negation_not_verified")
+        negated = re.search(
+            rf"\b(?:no|without|do not need|don't need)\s+(?:{pattern})"
+            rf"|(?:{pattern})\s+(?:is|are)\s+not\s+(?:required|needed)",
+            text,
+            re.I,
+        )
+        add(
+            "special_requirements",
+            requirement,
+            None if negated else match,
+            "negated_mention_needs_review" if negated else "mention_only_negation_not_verified",
+        )
     return evidence

@@ -55,4 +55,20 @@ def test_normalized_dates_times_and_word_counts_have_source_quotes():
 
 def test_mention_checks_explicitly_do_not_claim_to_verify_negation():
     rows = source_evidence(CharterRequest(special_requirements=["catering"]), "No catering.")
-    assert rows[0]["method"] == "mention_only_negation_not_verified"
+    assert rows[0]["method"] == "negated_mention_needs_review"
+    assert rows[0]["status"] == "unverified"
+    positive = source_evidence(CharterRequest(special_requirements=["wifi"]), "WiFi requested.")
+    assert positive[0]["method"] == "mention_only_negation_not_verified"
+
+
+def test_conflicting_counts_are_flagged_instead_of_treating_either_mention_as_proof():
+    text = "Previous message: eight passengers. Correction: four passengers."
+    for count in (4, 8):
+        rows = source_evidence(CharterRequest(passengers=count), text)
+        assert rows[0]["method"] == "conflicting_passenger_mentions"
+        assert rows[0]["status"] == "unverified"
+
+
+def test_literal_null_is_not_contact_evidence_even_when_it_occurs_in_the_text():
+    rows = source_evidence(CharterRequest(contact_email="null"), "Contact: null.")
+    assert rows[0]["status"] == "unverified"

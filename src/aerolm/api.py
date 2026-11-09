@@ -116,7 +116,7 @@ def create_app(
             return request.app.state.service.extract(body.text, body.domain)
         except ExtractionError as error:
             raise HTTPException(
-                502, "Model returned invalid structured output; no extraction accepted"
+                502, "Model output did not pass extraction checks; no extraction accepted"
             ) from error
         except ValueError as error:
             raise HTTPException(422, "Request exceeds model limits or is unsupported") from error

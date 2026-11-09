@@ -9,7 +9,7 @@ from aerolm.domains.registry import registry
 
 
 class ExtractionError(Exception):
-    """The backend did not produce a valid domain object."""
+    """Output failed JSON/schema or configured evidence acceptance checks."""
 
 
 class SourceEvidence(BaseModel):
