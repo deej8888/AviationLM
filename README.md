@@ -11,10 +11,10 @@ Qwen3 **0.6B or 1.7B**, train a **LoRA/QLoRA** adapter, and measure whether it a
 improves extraction. The engine is organized around domain contracts so other aviation
 workflows and industries can share the same inference and validation path.
 
-> **Release status:** functioning rules demo, optional HF inference, and a training/evaluation
-> pipeline. No fine-tuned weights are bundled. The published results below are actual
-> rules-baseline runs and a real Qwen base-model challenge run. Full fine-tuned results
-> are published only when the local experiment completes; never infer them from training loss.
+> **Release status:** functioning rules demo, HF inference, and a completed CPU LoRA experiment.
+> No fine-tuned weights are bundled. Measured Qwen base/adapter results and raw predictions
+> are included below. The adapter handles generated templates well but underperforms rules
+> on the authored challenge set; it is an experimental model requiring human review.
 
 ![AeroLM charter extraction workspace, running the CPU rules baseline](docs/assets/workspace.png)
 
@@ -162,10 +162,11 @@ No cloud training, paid service, or automatic model publication is used.
 
 The CPU recipe trains Qwen3-0.6B on 1,000 synthetic requests for three epochs, using
 120 validation requests and 120 template-held-out test requests. BF16 is explicit and
-requires an efficient BF16 CPU implementation; use float32 on other CPUs. The reference
-Ryzen 9 9950X profile took roughly 2.5–3 seconds per training example, so budget multiple
-hours for training plus generation-based evaluations. This is a throughput profile,
-not a completed fine-tuning or extraction result.
+requires an efficient BF16 CPU implementation; use float32 on other CPUs. The completed
+Ryzen 9 9950X run took **114.6 minutes for training**, excluding generation-based
+evaluations. It trained 10,092,544 adapter parameters over 375 optimizer steps, using
+12 CPU threads and a 1,024-token sequence limit. This run used LoRA, without 4-bit
+quantization or Unsloth. Hardware changes can substantially change runtime.
 
 ```sh
 uv sync --frozen --extra ml --extra dev
@@ -259,21 +260,36 @@ built by the default Compose stack or CPU container CI.
 
 ## Actual benchmark results
 
-Measured on **November 8, 2026**, Python 3.12.13, Windows CPU. Full reports include exact
-dependency versions and platform information. These numbers are **rules extraction**,
-not Qwen performance or a fine-tuning improvement claim.
+Measured on **November 8, 2026 (America/New_York)**, Python 3.12.13, Windows CPU.
+The Qwen runs use the same pinned Qwen3-0.6B checkpoint, prompt, greedy decoding,
+BF16 precision, and 12 CPU threads. All evaluation requests are synthetic. Full reports
+include dependency versions, platform information, and dataset/adapter hashes.
 
 | Backend / set | Requests | Precision | Recall | F1 | JSON valid | Schema valid | Exact record |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Rules / template holdout | 120 | 99.93% | 99.67% | 99.80% | 100% | 100% | 95.83% |
 | Rules / authored challenge | 24 | 98.37% | 90.98% | 94.53% | 100% | 100% | 70.83% |
+| Qwen3-0.6B base / template holdout | 120 | 0% | 0% | 0% | 0% | 0% | 0% |
 | Qwen3-0.6B base / authored challenge | 24 | 0% | 0% | 0% | 0% | 0% | 0% |
-| Qwen3-0.6B + LoRA/QLoRA | — | Not run | Not run | Not run | Not run | Not run | Not run |
+| Qwen3-0.6B + CPU LoRA / template holdout | 120 | 99.74% | 99.74% | 99.74% | 100% | 100% | 96.67% |
+| Qwen3-0.6B + CPU LoRA / authored challenge | 24 | 54.17% | 78.20% | 64.00% | 100% | 75% | 0% |
 
 The base model wrapped its outputs in Markdown code fences and also made schema/fact
 errors, including invented services and invalid field types. The evaluator rejects
 those raw outputs; its zero strict score does not mean the model recognized no facts.
 No JSON repair was applied to improve the score.
+
+The adapter produced valid JSON on all 144 requests, but JSON syntax alone is insufficient:
+six challenge responses failed the schema and none matched every expected fact. It invented
+times, aircraft preferences, and contact addresses when these were absent. The generated
+holdout shares the training vocabulary and mostly complete requests; it does not establish
+generalization to sparse operational messages. **Rules remain the stronger challenge
+baseline.** Next work should improve missing-field coverage and diverse training examples,
+then evaluate on a new untouched set rather than optimize against these 24 published cases.
+
+The [completed training manifest and comparisons](benchmarks/runs/) record the actual
+CPU recipe and measured deltas. Median adapter inference was 6.72 seconds per generated
+request and 5.54 seconds per challenge request, excluding model loading.
 
 Reports and per-request raw predictions are committed in [benchmarks/results](benchmarks/results).
 Formatting validity is expected to be perfect for rules, which serializes a Pydantic model;
