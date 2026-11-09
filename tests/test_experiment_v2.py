@@ -38,12 +38,14 @@ def test_frozen_selection_rejects_changed_adapter_or_validation_report(tmp_path)
         tmp_path / name for name in ("config.toml", "manifest.json", "report.json")
     ]
     weights = tmp_path / "adapter_model.safetensors"
-    for path in (config, manifest, report, weights):
+    adapter_files = [tmp_path / "adapter_config.json", tmp_path / "run_manifest.json"]
+    for path in (config, manifest, report, weights, *adapter_files):
         path.write_text("fixture")
     selection = {
         "config_sha256": sha256(config),
         "data_manifest_sha256": sha256(manifest),
         "adapter_sha256": sha256(weights),
+        "adapter_files": {p.name: sha256(p) for p in adapter_files},
         "validation_reports": {str(report): sha256(report)},
     }
     verify = runner["verify_selection"]
@@ -52,6 +54,10 @@ def test_frozen_selection_rejects_changed_adapter_or_validation_report(tmp_path)
     with pytest.raises(ValueError, match="Selection changed"):
         verify(selection, config, manifest, tmp_path)
     weights.write_text("fixture")
+    adapter_files[0].write_text("changed")
+    with pytest.raises(ValueError, match="metadata changed"):
+        verify(selection, config, manifest, tmp_path)
+    adapter_files[0].write_text("fixture")
     report.write_text(json.dumps({"changed": True}))
     with pytest.raises(ValueError, match="validation report changed"):
         verify(selection, config, manifest, tmp_path)

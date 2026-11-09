@@ -95,6 +95,11 @@ def verify_selection(selection: dict, config: Path, data_manifest: Path, adapter
     ):
         if sha256(path) != expected:
             raise ValueError("Selection changed after freezing; rerun full validation")
+    if set(selection["adapter_files"]) != {"adapter_config.json", "run_manifest.json"}:
+        raise ValueError("Frozen selection must include adapter config and training manifest")
+    for filename, digest in selection["adapter_files"].items():
+        if sha256(adapter / filename) != digest:
+            raise ValueError("Adapter metadata changed after freezing")
     for path, digest in selection["validation_reports"].items():
         if sha256(Path(path)) != digest:
             raise ValueError("Frozen validation report changed")
@@ -208,15 +213,21 @@ def main():
                 and previous["generation"] == generation
                 and previous["inference"]
                 == {
-                    "device": config["device"],
-                    "precision": config["precision"],
+                    "device": str(engine.model.device),
+                    "precision": engine.precision,
                     "cpu_threads": config["cpu_threads"],
                 }
                 and previous["adapter_loaded"] == bool(adapter_path)
                 and (
                     not adapter_path
-                    or previous["adapter_hashes"]["adapter_model.safetensors"]
-                    == sha256(adapter_path / "adapter_model.safetensors")
+                    or all(
+                        previous["adapter_hashes"].get(filename) == sha256(adapter_path / filename)
+                        for filename in (
+                            "adapter_model.safetensors",
+                            "adapter_config.json",
+                            "run_manifest.json",
+                        )
+                    )
                 )
             ):
                 phase(f"reuse_{name}")
@@ -247,6 +258,10 @@ def main():
                     "config_sha256": sha256(args.config),
                     "data_manifest_sha256": sha256(root / "data/manifest.json"),
                     "adapter_sha256": sha256(adapter / "adapter_model.safetensors"),
+                    "adapter_files": {
+                        name: sha256(adapter / name)
+                        for name in ("adapter_config.json", "run_manifest.json")
+                    },
                     "validation_reports": {str(p): sha256(p) for p in reports.values()},
                     "note": (
                         "Frozen experiment candidate, not a production qualification. "
