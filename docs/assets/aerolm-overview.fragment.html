@@ -1,0 +1,233 @@
+<div id="aerolm-overview">
+  <style>
+    #aerolm-overview { --diagram-ink: var(--foreground); --diagram-detail: color-mix(in srgb, var(--foreground) 70%, var(--background)); --diagram-line: color-mix(in srgb, var(--foreground) 38%, var(--background)); --diagram-soft: color-mix(in srgb, var(--foreground) 4%, var(--background)); --diagram-learn: color-mix(in srgb, var(--orange) 11%, var(--background)); font-family: Arial, Helvetica, sans-serif; color: var(--foreground); }
+    #aerolm-overview .toolbar { max-width: 1060px; margin: 0 auto; padding: 12px 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    #aerolm-overview .sheet { max-width: 1060px; padding: 26px 28px 22px; margin: 0 auto 24px; }
+    #aerolm-overview .sheet-head { display: flex; gap: 20px; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    #aerolm-overview h1, #aerolm-overview h2 { font-weight: 500; }
+    #aerolm-overview .kicker { display: block; color: var(--diagram-detail); margin-bottom: 8px; letter-spacing: .12em; }
+    #aerolm-overview .brand { white-space: nowrap; font-weight: 500; }
+    #aerolm-overview .subtitle { margin-top: 8px; color: var(--diagram-detail); }
+    #aerolm-overview .diagram { display: block; width: 100%; margin-top: 18px; overflow: visible; }
+    #aerolm-overview .diagram text { fill: var(--foreground); font-family: Arial, Helvetica, sans-serif; font-size: 15px; }
+    #aerolm-overview .diagram .title { font-size: 17px; font-weight: 500; }
+    #aerolm-overview .diagram .detail { font-size: 13px; fill: var(--diagram-detail); }
+    #aerolm-overview .diagram .mono { font-family: Consolas, monospace; font-size: 14px; }
+    #aerolm-overview .diagram .node { fill: var(--background); stroke: var(--diagram-line); stroke-width: 1; }
+    #aerolm-overview .diagram .soft { fill: var(--diagram-soft); }
+    #aerolm-overview .diagram .learn { fill: var(--diagram-learn); }
+    #aerolm-overview .diagram .group { fill: none; stroke: var(--border); stroke-width: 1; }
+    #aerolm-overview .diagram .link { fill: none; stroke: var(--diagram-line); stroke-width: 1.5; stroke-linejoin: round; }
+    #aerolm-overview .diagram .future { stroke-dasharray: 5 5; }
+    #aerolm-overview .diagram .label { font-size: 12px; fill: var(--diagram-detail); }
+    #aerolm-overview .legend { display: flex; gap: 20px; flex-wrap: wrap; padding: 12px 0; color: var(--muted-foreground); }
+    #aerolm-overview .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    #aerolm-overview .swatch { width: 13px; height: 13px; display: inline-block; background: var(--diagram-learn); }
+    #aerolm-overview .swatch.frozen { background: var(--diagram-soft); }
+    #aerolm-overview .takeaway { padding-top: 16px; border-top: 1px solid var(--border); }
+    #aerolm-overview .page-foot { margin-top: 16px; display: flex; justify-content: space-between; gap: 16px; color: var(--diagram-detail); }
+    #aerolm-overview .mobile-flow { display: none; }
+    #aerolm-overview .mobile-flow li { margin: 18px 0; padding-left: 4px; }
+    #aerolm-overview .mobile-flow small { display: block; margin-top: 5px; color: var(--muted-foreground); }
+    @media (max-width: 680px) {
+      #aerolm-overview .toolbar, #aerolm-overview .sheet { padding-left: 14px; padding-right: 14px; }
+      #aerolm-overview .sheet-head { flex-direction: column-reverse; gap: 12px; }
+      #aerolm-overview .diagram { display: none; }
+      #aerolm-overview .mobile-flow { display: block; padding-left: 22px; }
+      #aerolm-overview .toolbar { align-items: flex-start; }
+    }
+    @page { size: letter landscape; margin: .35in; }
+    @media print {
+      :root { color-scheme: light; }
+      html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
+      #aerolm-overview { --foreground: #1d3033; --background: #ffffff; --muted-foreground: #526467; --border: #d9e0dd; --orange: #b6532f; --font-size-base: 12px; font-size: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      #aerolm-overview .toolbar { display: none; }
+      #aerolm-overview .sheet { width: 100%; max-width: none; padding: 0; margin: 0; break-after: page; }
+      #aerolm-overview .sheet:last-child { break-after: auto; }
+      #aerolm-overview .sheet-head { display: flex; flex-direction: row; padding-bottom: 8px; }
+      #aerolm-overview .kicker { display: none; }
+      #aerolm-overview .subtitle { margin-top: 4px; }
+      #aerolm-overview .diagram { display: block; margin-top: 10px; }
+      #aerolm-overview .mobile-flow { display: none; }
+      #aerolm-overview .legend { display: none; }
+      #aerolm-overview .takeaway { padding-top: 8px; }
+      #aerolm-overview .page-foot { margin-top: 4px; }
+    }
+  </style>
+
+  <div class="toolbar">
+    <span class="text-small text-muted">AeroLM / Methodology overview</span>
+    <button id="aerolm-print" type="button" class="btn">Print / Save as PDF</button>
+  </div>
+
+  <section class="sheet" aria-labelledby="training-title">
+    <header class="sheet-head">
+      <div>
+        <span class="kicker text-small">01 / TRAINING AND EVALUATION</span>
+        <h1 id="training-title">Teach a small model a specific task.</h1>
+        <p class="subtitle">Read an aviation request and produce the required JSON structure.</p>
+      </div>
+      <span class="brand">AeroLM.</span>
+    </header>
+
+    <svg class="diagram" viewBox="0 0 1020 620" role="img" aria-labelledby="train-svg-title train-svg-desc">
+      <title id="train-svg-title">How AeroLM learns and is evaluated</title>
+      <desc id="train-svg-desc">One thousand synthetic email and JSON pairs train LoRA adapters while Qwen's original weights remain frozen. The model predicts answer tokens, compares them with the expected tokens, and updates only the adapters. There are three epochs and 375 optimizer updates. One hundred twenty validation examples monitor loss. Afterward, 120 held-out test requests and 24 challenge cases compare rules, base Qwen, and tuned Qwen using strict JSON and extraction metrics.</desc>
+      <defs>
+        <marker id="train-arrow" markerWidth="9" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--diagram-line)" stroke-width="1.5"/></marker>
+      </defs>
+
+      <text x="22" y="27" class="label">EXAMPLES WITH KNOWN ANSWERS</text>
+      <rect x="22" y="72" width="270" height="126" rx="7" class="node soft"/>
+      <text x="42" y="101" class="title">1,000 synthetic requests</text>
+      <text x="42" y="130" class="detail">Fictional email + correct JSON</text>
+      <text x="42" y="153" class="detail">Facts sampled before text is written</text>
+      <text x="42" y="177" class="mono">routes / dates / pax</text>
+      <path d="M304 135 H371" class="link" marker-end="url(#train-arrow)"/>
+
+      <rect x="383" y="35" width="615" height="270" rx="10" class="group"/>
+      <text x="404" y="61" class="label">THE TRAINING LOOP</text>
+      <rect x="405" y="80" width="247" height="88" rx="6" class="node soft"/>
+      <text x="424" y="107" class="title">Existing Qwen3-0.6B</text>
+      <text x="424" y="133" class="detail">~596 million original parameters</text>
+      <text x="424" y="153" class="detail">FROZEN / kept unchanged</text>
+      <rect x="690" y="80" width="278" height="88" rx="6" class="node learn"/>
+      <text x="709" y="107" class="title">LoRA adapters</text>
+      <text x="709" y="133" class="detail">10.1 million extra parameters</text>
+      <text x="709" y="153" class="detail">TRAINABLE / these learn the task</text>
+      <path d="M528 180 V203" class="link" marker-end="url(#train-arrow)"/>
+      <path d="M828 180 V203" class="link" marker-end="url(#train-arrow)"/>
+      <rect x="405" y="215" width="563" height="64" rx="6" class="node"/>
+      <text x="429" y="241" class="title">Predict the next JSON token</text>
+      <text x="429" y="263" class="detail">Compare with the correct token, then adjust only LoRA.</text>
+
+      <rect x="22" y="348" width="310" height="86" rx="6" class="node"/>
+      <text x="42" y="377" class="title">120 validation requests</text>
+      <text x="42" y="402" class="detail">Monitor loss after each epoch</text>
+      <text x="42" y="422" class="detail">Validation does not update weights</text>
+      <path d="M176 336 V253 H371" class="link future" marker-end="url(#train-arrow)"/>
+      <text x="197" y="325" class="label">monitor only</text>
+
+      <path d="M685 317 V344" class="link" marker-end="url(#train-arrow)"/>
+      <rect x="500" y="356" width="370" height="78" rx="6" class="node learn"/>
+      <text x="520" y="385" class="title">Saved adapter checkpoint</text>
+      <text x="520" y="411" class="detail">3 epochs / 375 optimizer updates</text>
+
+      <rect x="22" y="510" width="310" height="87" rx="6" class="node"/>
+      <text x="42" y="539" class="title">Held-out evaluation</text>
+      <text x="42" y="565" class="detail">120 test requests + 24 challenge cases</text>
+      <text x="42" y="585" class="detail">Separate from fine-tuning examples</text>
+      <path d="M344 553 H383" class="link" marker-end="url(#train-arrow)"/>
+      <rect x="395" y="510" width="320" height="87" rx="6" class="node"/>
+      <text x="415" y="539" class="title">Compare actual outputs</text>
+      <text x="415" y="565" class="detail">Rules / base Qwen / Qwen + LoRA</text>
+      <text x="415" y="585" class="detail">Generate answers without seeing targets</text>
+      <path d="M685 446 V475 H555 V498" class="link" marker-end="url(#train-arrow)"/>
+      <path d="M727 553 H766" class="link" marker-end="url(#train-arrow)"/>
+      <rect x="778" y="510" width="220" height="87" rx="6" class="node"/>
+      <text x="798" y="539" class="title">Measured results</text>
+      <text x="798" y="563" class="detail">JSON + schema validity</text>
+      <text x="798" y="583" class="detail">P / R / F1 / exact records</text>
+    </svg>
+
+    <ol class="mobile-flow">
+      <li>Prepare 1,000 synthetic email-to-JSON examples.<small>Correct labels come from sampled facts, not the rules extractor.</small></li>
+      <li>Keep the original Qwen3-0.6B weights frozen.<small>Train 10.1 million LoRA adapter parameters alongside them.</small></li>
+      <li>Predict JSON, compare with the target, and update LoRA.<small>Three epochs, 375 optimizer updates; 120 validation requests monitor loss.</small></li>
+      <li>Save the adapter and evaluate generated answers.<small>120 held-out test requests plus 24 challenge cases; compare rules, base Qwen, and tuned Qwen.</small></li>
+      <li>Measure validity and extraction quality.<small>Precision, recall, F1, and entirely correct requests.</small></li>
+    </ol>
+    <div class="legend text-small"><span><i class="swatch frozen" aria-hidden="true"></i> Existing frozen weights</span><span><i class="swatch" aria-hidden="true"></i> Trainable adapter / saved artifact</span></div>
+    <p class="takeaway">Low training loss shows learning on the examples. Held-out extraction results tell us whether that learning is useful.</p>
+    <footer class="page-foot text-small"><span>All fine-tuning examples in this project are synthetic.</span><span>1 / 2</span></footer>
+  </section>
+
+  <section class="sheet" aria-labelledby="inference-title">
+    <header class="sheet-head">
+      <div>
+        <span class="kicker text-small">02 / USING THE TRAINED MODEL</span>
+        <h2 id="inference-title">Turn a new request into a reviewable record.</h2>
+        <p class="subtitle">The base model and saved adapter work together on each request.</p>
+      </div>
+      <span class="brand">AeroLM.</span>
+    </header>
+
+    <svg class="diagram" viewBox="0 0 1020 610" role="img" aria-labelledby="infer-svg-title infer-svg-desc">
+      <title id="infer-svg-title">How AeroLM handles a new charter request</title>
+      <desc id="infer-svg-desc">A new email and the extraction instructions enter Qwen with its saved LoRA adapter. The generated JSON is checked for strict JSON and schema validity. Invalid output is rejected. Valid output is reviewed by staff, who confirm the facts and missing details. A quotation or operations system integration is a possible future extension. No retraining is performed for each request.</desc>
+      <defs>
+        <marker id="infer-arrow" markerWidth="9" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--diagram-line)" stroke-width="1.5"/></marker>
+      </defs>
+      <rect x="22" y="58" width="270" height="128" rx="7" class="node soft"/>
+      <text x="42" y="87" class="title">New charter email</text>
+      <text x="42" y="116" class="detail">TEB to MIA / 6 pax</text>
+      <text x="42" y="140" class="detail">March 18, 2027</text>
+      <text x="42" y="164" class="detail">Example input for illustration</text>
+      <rect x="22" y="234" width="270" height="90" rx="7" class="node"/>
+      <text x="42" y="264" class="title">Extraction contract</text>
+      <text x="42" y="290" class="detail">Instructions + required JSON schema</text>
+      <path d="M304 122 H346 V175 H380" class="link" marker-end="url(#infer-arrow)"/>
+      <path d="M304 278 H346 V235 H380" class="link" marker-end="url(#infer-arrow)"/>
+
+      <rect x="392" y="120" width="278" height="166" rx="7" class="node learn"/>
+      <text x="413" y="150" class="title">Qwen base + LoRA adapter</text>
+      <text x="413" y="180" class="detail">Read the request and instructions</text>
+      <text x="413" y="205" class="detail">Generate the JSON response</text>
+      <text x="413" y="232" class="detail">Use the saved parameters</text>
+      <text x="413" y="257" class="detail">Training is a separate offline step</text>
+      <path d="M682 203 H727" class="link" marker-end="url(#infer-arrow)"/>
+
+      <rect x="739" y="58" width="259" height="236" rx="7" class="node soft"/>
+      <text x="759" y="87" class="title">Generated JSON</text>
+      <text x="759" y="115" class="mono">{</text>
+      <text x="773" y="134" class="mono">"legs": [{</text>
+      <text x="785" y="153" class="mono">"origin": "TEB",</text>
+      <text x="785" y="172" class="mono">"destination": "MIA",</text>
+      <text x="785" y="191" class="mono">"departure_date":</text>
+      <text x="797" y="210" class="mono">"2027-03-18"</text>
+      <text x="773" y="229" class="mono">}],</text>
+      <text x="773" y="248" class="mono">"passengers": 6</text>
+      <text x="759" y="267" class="mono">}</text>
+      <text x="759" y="286" class="label">Example fields; unknown values omitted.</text>
+
+      <path d="M868 306 V350" class="link" marker-end="url(#infer-arrow)"/>
+      <rect x="739" y="362" width="259" height="88" rx="7" class="node"/>
+      <text x="759" y="392" class="title">Strict validation</text>
+      <text x="759" y="419" class="detail">Valid JSON + Pydantic schema</text>
+      <text x="759" y="440" class="detail">Checks structure, not truth</text>
+
+      <path d="M727 406 H682" class="link" marker-end="url(#infer-arrow)"/>
+      <text x="695" y="389" class="label">passes</text>
+      <rect x="392" y="362" width="278" height="88" rx="7" class="node"/>
+      <text x="413" y="392" class="title">Staff reviews the draft</text>
+      <text x="413" y="419" class="detail">Confirm extracted facts</text>
+      <text x="413" y="440" class="detail">Resolve missing or ambiguous details</text>
+
+      <path d="M380 406 H304" class="link future" marker-end="url(#infer-arrow)"/>
+      <text x="342" y="378" text-anchor="middle" class="label">future</text>
+      <text x="342" y="395" text-anchor="middle" class="label">integration</text>
+      <rect x="22" y="362" width="270" height="88" rx="7" class="node future"/>
+      <text x="42" y="392" class="title">Draft quotation / ops record</text>
+      <text x="42" y="419" class="detail">Prefill an existing business system</text>
+      <text x="42" y="440" class="detail">Not implemented in this prototype</text>
+
+      <path d="M868 462 V509" class="link" marker-end="url(#infer-arrow)"/>
+      <text x="883" y="491" class="label">fails</text>
+      <rect x="739" y="521" width="259" height="67" rx="7" class="node"/>
+      <text x="759" y="549" class="title">Reject invalid output</text>
+      <text x="759" y="574" class="detail">Return an error for review</text>
+      <text x="22" y="551" class="label">ILLUSTRATIVE FLOW / NO LIVE PREDICTION OR ACCURACY CLAIM</text>
+      <text x="22" y="577" class="detail">Current interfaces: FastAPI extraction API + Next.js testing dashboard.</text>
+    </svg>
+
+    <ol class="mobile-flow">
+      <li>Provide a new charter request.<small>The application combines it with extraction instructions and the JSON schema.</small></li>
+      <li>Run the saved Qwen model and LoRA adapter together.<small>The model generates an answer; it does not retrain for each email.</small></li>
+      <li>Check strict JSON and schema validity.<small>Invalid output is rejected. Valid structure alone does not prove correct facts.</small></li>
+      <li>Have staff review the draft.<small>Confirm airports, dates, passengers and preferences; resolve unknowns.</small></li>
+      <li>Potential future integration: prefill a quotation or operations record.<small>This business-system connection is not implemented in the prototype.</small></li>
+    </ol>
+    <p class="takeaway">The practical goal is less retyping and a consistent draft record, with a person confirming the operational details.</p>
+    <footer class="page-foot text-small"><span>Charter extraction is the implemented domain; other domains need their own data and schemas.</span><span>2 / 2</span></footer>
+  </section>
+</div>
