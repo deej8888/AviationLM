@@ -11,5 +11,6 @@
 artifacts
 models
 data/generated
+data/robust-v2
 web/test-results
 web/playwright-report
