@@ -22,7 +22,12 @@ export function Evaluations({ reports }: { reports: Report[] }) {
           <span className="file-label">SYNTHETIC ONLY</span>
         </div>
         {reports.length ? (
-          <div className="table-scroll">
+          <div
+            className="table-scroll"
+            role="region"
+            aria-label="Benchmark comparison, scroll horizontally for all metrics"
+            tabIndex={0}
+          >
             <table>
               <thead>
                 <tr>

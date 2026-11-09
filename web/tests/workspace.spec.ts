@@ -63,10 +63,15 @@ test("shows actual benchmarks and pipeline on both viewports", async ({
   await expect(
     page.getByText("rules-challenge", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("94.5%", { exact: true })).toBeVisible();
+  await expect(page.getByRole("row").filter({ has: page.getByText("rules-challenge", { exact: true }) }).getByText("94.5%", { exact: true })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Schema valid", exact: true })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Exact request", exact: true })).toBeVisible();
-  await page.screenshot({ path: info.outputPath("benchmarks.png"), fullPage: true });
+  await page.screenshot({ path: info.outputPath("benchmarks.png"), fullPage: true, animations: "disabled" });
+  if (info.project.name === "mobile") {
+    const comparison = page.getByRole("region", { name: "Benchmark comparison", exact: false });
+    await comparison.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+    await expect(page.getByRole("columnheader", { name: "Nulls filled", exact: true })).toBeInViewport();
+  }
   if (info.project.name === "mobile")
     await page.getByRole("button", { name: "Toggle navigation" }).click();
   await page.getByRole("button", { name: "The pipeline", exact: true }).click();
