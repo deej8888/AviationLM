@@ -40,9 +40,13 @@ def create_app(
         elif config.backend == "hf":
             from aerolm.backends.huggingface import HuggingFaceBackend
 
-            app.state.service = ExtractionService(HuggingFaceBackend(config))
+            app.state.service = ExtractionService(
+                HuggingFaceBackend(config), evidence_policy=config.evidence_policy
+            )
         else:
-            app.state.service = ExtractionService(RulesBackend())
+            app.state.service = ExtractionService(
+                RulesBackend(), evidence_policy=config.evidence_policy
+            )
         app.state.gate = BoundedSemaphore(1)
         yield
 

@@ -14,6 +14,7 @@ class DomainSpec:
     schema: type[BaseModel]
     instructions: str
     review: Callable[[BaseModel, str], list[str]]
+    evidence: Callable[[BaseModel, str], list[dict]] | None = None
 
     def messages(self, text: str) -> list[dict[str, str]]:
         prompt = (

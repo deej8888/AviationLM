@@ -2,6 +2,7 @@
 
 from aerolm.core import DomainRegistry, DomainSpec
 from aerolm.domains.charter import CharterRequest, review_warnings
+from aerolm.domains.grounding import source_evidence
 
 registry = DomainRegistry()
 registry.register(
@@ -19,5 +20,6 @@ registry.register(
             "Keep budget currency as written. Do not infer trip_type unless stated."
         ),
         review=review_warnings,
+        evidence=source_evidence,
     )
 )
