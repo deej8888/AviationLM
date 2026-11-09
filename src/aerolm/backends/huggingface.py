@@ -6,6 +6,7 @@ from pathlib import Path
 
 from aerolm.core import DomainSpec
 from aerolm.settings import Settings
+from aerolm.prompting import load_demonstrations, with_demonstrations
 
 
 class InputTooLongError(ValueError):
@@ -70,6 +71,16 @@ class HuggingFaceBackend:
             self.model = PeftModel.from_pretrained(self.model, self.adapter_path)
         self.model.eval()
         self.resolved_revision = getattr(self.model.config, "_commit_hash", revision)
+        self._demonstrations: dict[str, list[dict]] = {}
+
+    def messages(self, domain: DomainSpec, text: str) -> list[dict]:
+        if not self.settings.few_shot_path:
+            return domain.messages(text)
+        if domain.name not in self._demonstrations:
+            self._demonstrations[domain.name] = load_demonstrations(
+                Path(self.settings.few_shot_path), domain
+            )
+        return with_demonstrations(domain, text, self._demonstrations[domain.name])
 
     def generate(self, text: str, domain: DomainSpec) -> str:
         if self.adapter_manifest:
@@ -82,7 +93,7 @@ class HuggingFaceBackend:
             ):
                 raise ValueError("Adapter domain or schema/prompt differs from the training run")
         prompt = self.tokenizer.apply_chat_template(
-            domain.messages(text),
+            self.messages(domain, text),
             tokenize=False,
             add_generation_prompt=True,
             enable_thinking=False,
@@ -92,12 +103,28 @@ class HuggingFaceBackend:
             raise InputTooLongError(
                 "Input including schema exceeds token limit; shorten the request"
             )
+        generation_kwargs = {}
+        if self.settings.structured_output:
+            try:
+                from lmformatenforcer import JsonSchemaParser
+                from lmformatenforcer.integrations.transformers import (
+                    build_transformers_prefix_allowed_tokens_fn,
+                )
+            except ImportError as error:
+                raise RuntimeError(
+                    "Install structured decoding: uv sync --extra ml --extra structured"
+                ) from error
+            parser = JsonSchemaParser(domain.schema.model_json_schema())
+            generation_kwargs["prefix_allowed_tokens_fn"] = (
+                build_transformers_prefix_allowed_tokens_fn(self.tokenizer, parser)
+            )
         with self.torch.inference_mode():
             outputs = self.model.generate(
                 **inputs,
                 max_new_tokens=self.settings.max_new_tokens,
                 do_sample=False,
                 pad_token_id=self.tokenizer.eos_token_id,
+                **generation_kwargs,
             )
         return self.tokenizer.decode(
             outputs[0, inputs.input_ids.shape[-1] :],

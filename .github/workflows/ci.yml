@@ -33,7 +33,7 @@ jobs:
           version: '0.11.32'
           python-version: '3.12'
           enable-cache: true
-      - run: uv sync --frozen --extra dev --extra ml
+      - run: uv sync --frozen --extra dev --extra ml --extra structured
       - run: uv run --no-sync pytest -m ml
   dashboard:
     runs-on: ubuntu-latest

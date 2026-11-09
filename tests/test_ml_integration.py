@@ -92,3 +92,61 @@ def test_real_completion_masking_and_lora_update(tmp_path, loss_only):
     trainer.save_model(str(tmp_path / "adapter"))
     reloaded = PeftModel.from_pretrained(Qwen3ForCausalLM(model_config), tmp_path / "adapter")
     assert reloaded.peft_config["default"].r == 2
+
+
+@pytest.mark.ml
+def test_constrained_generation_with_real_tiny_random_model():
+    pytest.importorskip("lmformatenforcer")
+    import json
+
+    from lmformatenforcer import JsonSchemaParser
+    from lmformatenforcer.integrations.transformers import (
+        build_transformers_prefix_allowed_tokens_fn,
+    )
+    from tokenizers import Tokenizer, decoders, models, pre_tokenizers, trainers
+    from transformers import PreTrainedTokenizerFast, Qwen3Config, Qwen3ForCausalLM
+
+    torch.manual_seed(42)
+    torch.set_num_threads(2)
+    core = Tokenizer(models.BPE(unk_token="<unk>"))
+    core.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
+    core.decoder = decoders.ByteLevel()
+    core.train_from_iterator(
+        ['{"value":6} Generate JSON.'],
+        trainers.BpeTrainer(
+            vocab_size=300,
+            initial_alphabet=pre_tokenizers.ByteLevel.alphabet(),
+            special_tokens=["<unk>", "<eos>"],
+        ),
+    )
+    tokenizer = PreTrainedTokenizerFast(tokenizer_object=core, eos_token="<eos>", unk_token="<unk>")
+    model = Qwen3ForCausalLM(
+        Qwen3Config(
+            vocab_size=len(tokenizer),
+            hidden_size=32,
+            intermediate_size=64,
+            num_hidden_layers=1,
+            num_attention_heads=2,
+            num_key_value_heads=1,
+            head_dim=16,
+            max_position_embeddings=256,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+    )
+    schema = {
+        "type": "object",
+        "properties": {"value": {"type": "integer", "enum": [6]}},
+        "required": ["value"],
+        "additionalProperties": False,
+    }
+    prefix = build_transformers_prefix_allowed_tokens_fn(tokenizer, JsonSchemaParser(schema))
+    inputs = tokenizer("Generate JSON.", return_tensors="pt", return_token_type_ids=False)
+    outputs = model.generate(
+        **inputs,
+        do_sample=False,
+        max_new_tokens=128,
+        prefix_allowed_tokens_fn=prefix,
+        pad_token_id=tokenizer.eos_token_id,
+    )
+    raw = tokenizer.decode(outputs[0, inputs.input_ids.shape[-1] :], skip_special_tokens=True)
+    assert json.loads(raw) == {"value": 6}

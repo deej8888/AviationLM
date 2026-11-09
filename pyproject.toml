@@ -29,6 +29,9 @@ unsloth = [
   "torchvision==0.24.1; sys_platform == 'linux'",
   "torchao==0.14.1; sys_platform == 'linux'",
 ]
+structured = [
+    "lm-format-enforcer==0.11.3",
+]
 
 [project.scripts]
 aerolm = "aerolm.cli:app"
