@@ -18,5 +18,6 @@ artifacts/
 .venv-*/
 models/
 data/generated/
+data/robust-v2/
 dist/
 build/
