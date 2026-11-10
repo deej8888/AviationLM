@@ -1,8 +1,8 @@
 # Benchmark log
 
-The committed numbers were **actually computed locally on November 8, 2026
-(America/New_York)**. The Qwen3-0.6B LoRA run completed on CPU; no GPU fine-tuning
-was performed. The rules backend is a hand-written pattern baseline, not an LM.
+The first-experiment numbers below were **actually computed locally on November 8, 2026
+(America/New_York)**. The full v2 experiment completed November 10. Both used CPU LoRA;
+no GPU fine-tuning was performed. The rules backend is a hand-written baseline, not an LM.
 
 | Run | N | Precision | Recall | F1 | JSON validity | Schema validity | Exact record |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -46,7 +46,12 @@ All five variants use the same 24 **validation** requests, separately from both 
 original challenge and the new 300-request test set. V2 reached 95.9128% F1 and 19/24
 exact requests; the original adapter reached 63.8298% and 3/24, and rules reached
 82.9851% and 3/24. These reports use the `v2-pilot-` prefix and preserve raw outputs.
-The full v2 training/test stages have not run.
+The full v2 run has now completed. On its separate 300-request synthetic test, raw base
+Qwen scored 0% F1 under the strict JSON contract, rules scored 79.0005%, and the v2
+adapter scored **98.5702%**, with 284/300 exact requests and 297/300 schema-valid outputs.
+The base's 300 outputs all used Markdown fences. The original v1 adapter was not run on
+the 300-request set. The [complete v2 table and failure analysis](../docs/EXPERIMENT_V2.md#completed-full-run-and-frozen-test)
+distinguishes the 200-request validation from the frozen test and records all limitations.
 
 Report version 1.1 adds per-scenario counts and null-slot false-fill diagnostics without
 changing the existing slot metrics. The false-fill rate covers explicit null gold slots

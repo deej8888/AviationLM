@@ -75,10 +75,10 @@ AM/PM conversion (one schema failure and one wrong time), and a missed pet requi
 Constrained base generation also emitted a non-ISO date: JSON Schema `format` hints and
 Pydantic validators are not all enforced by the decoding library. Pydantic rejected it.
 
-This supports further investigation of data coverage. The small validation sample,
+This supported further investigation of data coverage. The small validation sample,
 shared clause renderer, different training sizes/epochs/seeds, and inspection of these
-errors prevent a broad generalization or single-cause claim. No new 300-request test
-results or full 2,000-example training results are claimed.
+errors prevent a broad generalization or single-cause claim. The full run below used a
+fresh adapter and a separate 300-request test.
 
 Reports and raw outputs are in [`benchmarks/results`](../benchmarks/results/) with the
 `v2-pilot-` prefix. The exact [training manifest](../benchmarks/runs/v2-pilot-training.json)
@@ -92,6 +92,57 @@ uv run --no-sync aerolm train --config benchmarks/runs/v2-pilot-config.toml --da
 The completed local pilot adapter is `artifacts/robust-v2/pilot/adapter`. To test it
 without changing the saved default, set `AEROLM_ADAPTER_PATH` to that path for a new API
 process, keeping model revision, CPU BF16, and 12 threads consistent with the run.
+
+## Completed full run and frozen test
+
+The full v2 run finished on November 10, 2026 (America/New_York). It trained Qwen3-0.6B
+with rank-16 CPU LoRA, BF16, 12 CPU threads, 2,000 synthetic requests, three epochs,
+and 750 optimizer steps. Training took **14,039.7 seconds (3 hours 54 minutes)**;
+the five validation evaluations and three test evaluations were additional. The
+candidate, config, data manifest, and validation report hashes were frozen before test.
+
+| Run / split | N | Precision | Recall | F1 | JSON valid | Schema valid | Exact request |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Rules / validation | 200 | 92.20% | 70.54% | 79.93% | 100% | 100% | 39/200 |
+| Original v1 adapter / validation | 200 | 76.34% | 57.36% | 65.51% | 97% | 57.5% | 25/200 |
+| New v2 adapter / validation | 200 | 100% | 100% | 100% | 100% | 100% | 200/200 |
+| Rules / test | 300 | 93.14% | 68.59% | 79.00% | 100% | 100% | 63/300 |
+| Raw base Qwen / test | 300 | 0% | 0% | 0% | 0% | 0% | 0/300 |
+| New v2 adapter / test | 300 | 99.36% | 97.79% | 98.57% | 100% | 99% | 284/300 |
+
+All 300 base-model test responses used Markdown fences, so strict raw JSON parsing
+rejected them. This interface score does not mean the base recognized no facts. The
+original v1 adapter was evaluated on the 200-request validation set, not the 300-request
+test; do not compare its validation score to the v2 test as a matched test result.
+
+The v2 test produced 2,344 correct facts, 15 wrong-value false positives, and 53 missed
+facts under the strict scoring protocol. Three schema-invalid responses receive no fact
+credit. Among the 297 schema-valid outputs, the null-slot diagnostic found 0 false fills
+across 1,452 explicitly null slots. This excludes invalid responses and does not imply
+zero hallucinations: 13 schema-valid requests contained wrong airport-code values.
+
+All **16 non-exact test requests** included lowercase airport codes absent from training.
+Examples included truncating `KLAX` to `KLA` and producing `KBOB` for `KBOS`. The three
+schema failures emitted `KSFo` rather than uppercase `KSFO`. These are meaningful errors:
+code shape validation alone does not verify an airport. The test uses disjoint wrapper
+families and includes four held-out airport-code tokens, but shares its clause renderer
+and much of its vocabulary with training. It is synthetic and has not been independently
+human-reviewed; neither its high score nor the perfect validation score establishes
+reliability on company email or operational decisions.
+
+Reports and raw predictions use the `v2-full-` and `v2-test-` prefixes in
+[`benchmarks/results`](../benchmarks/results/). Exact metadata is in the
+[training manifest](../benchmarks/runs/v2-full-training.json),
+[data manifest](../benchmarks/runs/v2-full-data-manifest.json),
+[config](../benchmarks/runs/v2-full-config.toml), and
+[frozen selection](../benchmarks/runs/v2-full-selection.json). The selection records
+the original local report paths; their bytes were copied into the benchmark directory.
+The local full adapter is `artifacts/robust-v2.1/full/adapter`; weights are not bundled.
+
+After the run, an adapter-backed FastAPI smoke request returned the correct TEB-to-MIA
+route, date, time, passenger count, and null missing fields, with human review required.
+The local `.env` was updated to use the full adapter after that check. Existing API
+processes need a restart. The staged experiment runner itself does not auto-activate models.
 
 ## Run the staged experiment
 

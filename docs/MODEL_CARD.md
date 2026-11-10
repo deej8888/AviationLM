@@ -1,14 +1,15 @@
 # AeroLM model / adapter card
 
-The [second experiment](EXPERIMENT_V2.md) adds a separate data profile and validation-first
-pilot. The measured full-run figures below continue to describe the first adapter;
-implementing v2 is not evidence that its model performs better. V2 candidates are not
-automatically activated or published.
+The [second experiment](EXPERIMENT_V2.md) adds a separate data profile, a validation-first
+pilot, and a completed full CPU run. V2 achieved 98.57% F1 and 284/300 exact records on
+its synthetic test. The test shares a clause renderer with training; its score does not
+establish real-world reliability. The first adapter's separate results are retained below.
 
-**Release status:** completed experimental CPU LoRA training and evaluation on November 8,
-2026 (America/New_York). A trained adapter exists locally; weights are not bundled or
-uploaded. Reports, raw predictions, and a completed run manifest are committed.
-The adapter underperforms rules on the authored challenge set and requires human review.
+**Release status:** completed experimental CPU LoRA runs on November 8 and November 10,
+2026 (America/New_York). Both trained adapters exist locally; weights are not bundled or
+uploaded. Reports, raw predictions, and run manifests are committed. The first adapter
+underperforms rules on the authored challenge; the full v2 adapter has not been evaluated
+on that challenge. All uses require human review.
 
 ## Intended use
 
@@ -62,13 +63,20 @@ and exact-record accuracy on the same held-out input. Include dataset/prompt has
 raw predictions, full run metadata, and adapter hashes. Do not fill in scores before
 actually running evaluation. See [measured results](../benchmarks/README.md) for all runs.
 
-The completed adapter scored 99.7358% micro F1 and 96.6667% exact-record match on the
+The first completed adapter scored 99.7358% micro F1 and 96.6667% exact-record match on the
 120-request generated holdout, with 100% JSON/schema validity. On the independent
 24-request synthetic challenge it scored 64% F1, 100% JSON validity, 75% schema validity,
 and 0% exact-record match. Rules achieved 94.5313% F1 and 70.8333% exact match on that
 challenge. Both base-model suites scored zero under the strict raw-output contract,
 primarily because every output used Markdown fences; the base also made schema/fact
 errors. These results do not establish reliability on real company emails.
+
+The full v2 run trained 10,092,544 parameters on 2,000 synthetic examples for three
+epochs and 750 optimizer steps. On its held-out 300-request synthetic test it scored
+98.5702% F1, 100% JSON validity, 99% schema validity, and 94.6667% exact-record match.
+Rules achieved 79.0005% F1 and 21% exact match on the same test. All 16 v2 errors
+included lowercase airport codes withheld from training; three responses failed the
+schema. See [full methods and limitations](EXPERIMENT_V2.md#completed-full-run-and-frozen-test).
 
 ## Known limitations
 
@@ -80,7 +88,7 @@ Airport identifiers are checked for shape, not looked up in an authoritative dir
 IATA/ICAO aliases are not resolved. Dates are not timezone-converted. Synthetic evaluations
 do not establish reliability on actual aviation operations or customer email.
 
-The completed adapter frequently invents missing times, timezones, aircraft preferences,
+The first adapter frequently invents missing times, timezones, aircraft preferences,
 trip types, and contact addresses on sparse requests. It can emit `"null"` as a literal
 string, omit later itinerary legs, and fail airport/time normalization. All training
 examples include a contact address and mostly supply other fields, so the generated

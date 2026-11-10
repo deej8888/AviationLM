@@ -11,10 +11,10 @@ Qwen3 **0.6B or 1.7B**, train a **LoRA/QLoRA** adapter, and measure whether it a
 improves extraction. The engine is organized around domain contracts so other aviation
 workflows and industries can share the same inference and validation path.
 
-> **Release status:** functioning rules demo, HF inference, and a completed CPU LoRA experiment.
-> No fine-tuned weights are bundled. Measured Qwen base/adapter results and raw predictions
-> are included below. The adapter handles generated templates well but underperforms rules
-> on the authored challenge set; it is an experimental model requiring human review.
+> **Release status:** functioning rules demo, HF inference, and two completed CPU LoRA experiments.
+> No fine-tuned weights are bundled. The newer adapter scored 98.57% F1 on a controlled
+> 300-request synthetic test. The first adapter underperformed rules on the authored
+> challenge. All models are experimental and require human review.
 
 ![AeroLM charter extraction workspace, running the CPU rules baseline](docs/assets/workspace.png)
 
@@ -213,13 +213,14 @@ for the full/test stages, evaluation boundaries, and source-evidence limitations
 Do not infer improved accuracy from implementing these changes; only completed model
 evaluations establish the next measured result.
 
-The first **240-example, one-epoch pilot** is complete. On 24 new validation requests,
-the v2 adapter achieved **95.91% F1 and 19/24 exact requests**, versus 63.83% and 3/24
-for the original adapter, and 82.99% and 3/24 for rules. Its schema validity was 23/24.
-These are small controlled validation results, not scores on the original challenge
-or the new 300-request test set. The [v2 guide](docs/EXPERIMENT_V2.md) includes all
-baselines, remaining failures, exact frozen inputs, and the reproducibility correction
-in generator 2.1. The full v2 training/test stages remain available to run.
+The completed full v2 run trained on **2,000 synthetic requests for three epochs**.
+On the separate 300-request synthetic test it achieved **98.57% F1 and 284/300 exact
+requests**; rules scored 79.00% F1 and 63/300 exact. The model returned valid JSON
+for all 300 requests and passed schema validation for 297. Its 16 incorrect requests
+all involved lowercase airport codes withheld from training. The test shares a clause
+renderer and vocabulary with training; it does not establish real-world reliability.
+See the [v2 guide](docs/EXPERIMENT_V2.md) for the pilot, full results, raw outputs,
+failure analysis, and the evidence-ordering reproducibility correction.
 
 ### CUDA LoRA / QLoRA
 
@@ -285,7 +286,7 @@ docker run --rm --gpus all -v aerolm-artifacts:/app/artifacts aerolm-gpu aerolm 
 The host needs NVIDIA Container Toolkit. The GPU image is provided separately and is not
 built by the default Compose stack or CPU container CI.
 
-## Actual benchmark results
+## Actual benchmark results: first experiment
 
 Measured on **November 8, 2026 (America/New_York)**, Python 3.12.13, Windows CPU.
 The Qwen runs use the same pinned Qwen3-0.6B checkpoint, prompt, greedy decoding,
@@ -306,13 +307,13 @@ errors, including invented services and invalid field types. The evaluator rejec
 those raw outputs; its zero strict score does not mean the model recognized no facts.
 No JSON repair was applied to improve the score.
 
-The adapter produced valid JSON on all 144 requests, but JSON syntax alone is insufficient:
+The first adapter produced valid JSON on all 144 requests, but JSON syntax alone is insufficient:
 six challenge responses failed the schema and none matched every expected fact. It invented
 times, aircraft preferences, and contact addresses when these were absent. The generated
 holdout shares the training vocabulary and mostly complete requests; it does not establish
 generalization to sparse operational messages. **Rules remain the stronger challenge
-baseline.** Next work should improve missing-field coverage and diverse training examples,
-then evaluate on a new untouched set rather than optimize against these 24 published cases.
+baseline.** The subsequent v2 experiment addresses data coverage and has its own results
+on a separate synthetic test; it has not been measured on this original challenge.
 
 The [completed training manifest and comparisons](benchmarks/runs/) record the actual
 CPU recipe and measured deltas. Median adapter inference was 6.72 seconds per generated

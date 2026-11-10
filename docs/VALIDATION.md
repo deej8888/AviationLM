@@ -1,12 +1,12 @@
 # Local validation record
 
-Executed November 8, 2026 on Windows with Python 3.12.13, Node 24.18.0,
+Executed November 8–10, 2026 on Windows with Python 3.12.13, Node 24.18.0,
 uv 0.11.32, and the committed dependency locks.
 
 | Check | Observed result |
 | --- | --- |
 | `uv run --no-sync pytest` with ML/structured dependencies installed | 55 passed |
-| `uv run --no-sync python scripts/verify_benchmarks.py` | All 11 reports audited: rules regenerated; stored model outputs rescored; aggregate/per-request counts and dataset/prompt hashes matched |
+| `uv run --no-sync python scripts/verify_benchmarks.py` | All 19 reports audited: rules regenerated; stored model outputs rescored; aggregate/per-request counts and dataset/prompt hashes matched |
 | `uv build` | Source distribution and wheel built successfully |
 | `npm run build` in `web/` | Next.js production build and TypeScript checks passed |
 | `npm run test:e2e` in `web/` | 8 passed, desktop and mobile Chromium, using the actual local API |
@@ -59,7 +59,19 @@ The 240-example, one-epoch v2 pilot completed training and all five validation r
 (rules, raw base, prompted/constrained base, original adapter, new adapter). Exact inputs,
 training manifest/config, reports, and raw outputs are committed. The new adapter scored
 95.9128% F1 and 19/24 exact requests on those new validation cases; it still had one
-schema failure. The 300-request test set was not evaluated and full v2 training did not run.
+schema failure. Subsequently, full v2 training and its frozen 300-request test completed.
+
+The full v2 adapter trained for three epochs on 2,000 requests in 14,039.7 seconds. On
+the 300-request test, it achieved 98.5702% F1, 100% JSON validity, 99% schema validity,
+and 284/300 exact requests. Rules reached 79.0005% F1 and 63/300 exact. The test was
+synthetic and shares a clause renderer with training. All 16 model errors included a
+lowercase airport code absent from training, including three schema-invalid `KSFo`
+outputs. The candidate/config/data/report hashes were frozen before test.
+
+An actual FastAPI request with the full adapter returned the correct synthetic TEB-to-MIA
+route, date, time, six passengers, and null absent fields. The response required human
+review. The full adapter was selected in the ignored local `.env` after this smoke check;
+restart an existing API process to load it. Weights were not uploaded or committed.
 
 Generator 2.0 had process-dependent evidence-list ordering. Version 2.1 sorts it;
 cross-process tests use different Python hash seeds, and another test verifies that
