@@ -1,0 +1,130 @@
+{
+  "generator_version": "2.1",
+  "profile": "robust-charter-v2",
+  "seed": 84,
+  "provenance": "synthetic",
+  "license": "CC0-1.0",
+  "annotation_review": "Programmatic ledger and automated checks; no independent human review",
+  "splits": {
+    "train": {
+      "count": 2000,
+      "sha256": "23f3d729935c478775c027a46368821edcca94c054f7d16e8eb678e31eca5625",
+      "template_families": [
+        "ops_email",
+        "broker_note",
+        "quick_message",
+        "dispatch_list"
+      ],
+      "coverage": {
+        "scenarios": {
+          "ambiguous": 200,
+          "complete": 400,
+          "correction": 200,
+          "empty": 200,
+          "multi_leg": 200,
+          "negation": 200,
+          "sparse": 400,
+          "unknown_aircraft": 200
+        },
+        "missing_fields": {
+          "trip_type": 836,
+          "passengers": 476,
+          "aircraft_category": 927,
+          "aircraft_preference": 917,
+          "return_date": 1694,
+          "budget": 1341,
+          "contact_email": 998
+        },
+        "missing_leg_fields": {
+          "origin": 212,
+          "destination": 206,
+          "departure_date": 569,
+          "departure_time": 658,
+          "time_zone": 847
+        },
+        "total_legs": 2087,
+        "multi_leg_requests": 200,
+        "empty_requests": 200
+      }
+    },
+    "validation": {
+      "count": 200,
+      "sha256": "476c69a66243d53a76a4958bb69bfa61efe1b6ca266ef0a25cbebffecf058099",
+      "template_families": [
+        "intake_note",
+        "assistant_memo"
+      ],
+      "coverage": {
+        "scenarios": {
+          "ambiguous": 20,
+          "complete": 40,
+          "correction": 20,
+          "empty": 20,
+          "multi_leg": 20,
+          "negation": 20,
+          "sparse": 40,
+          "unknown_aircraft": 20
+        },
+        "missing_fields": {
+          "trip_type": 85,
+          "passengers": 45,
+          "aircraft_category": 97,
+          "aircraft_preference": 100,
+          "return_date": 173,
+          "budget": 137,
+          "contact_email": 99
+        },
+        "missing_leg_fields": {
+          "origin": 15,
+          "destination": 22,
+          "departure_date": 58,
+          "departure_time": 60,
+          "time_zone": 81
+        },
+        "total_legs": 212,
+        "multi_leg_requests": 20,
+        "empty_requests": 20
+      }
+    },
+    "test": {
+      "count": 300,
+      "sha256": "a3ab4b5ce6155fdeb9238b9baeb8f89b063a4ec5b81c0f117bf5c5edf46a0288",
+      "template_families": [
+        "travel_form",
+        "concierge_handoff",
+        "customer_rfq"
+      ],
+      "coverage": {
+        "scenarios": {
+          "ambiguous": 30,
+          "complete": 60,
+          "correction": 30,
+          "empty": 30,
+          "multi_leg": 30,
+          "negation": 30,
+          "sparse": 60,
+          "unknown_aircraft": 30
+        },
+        "missing_fields": {
+          "trip_type": 129,
+          "passengers": 66,
+          "aircraft_category": 154,
+          "aircraft_preference": 144,
+          "return_date": 246,
+          "budget": 208,
+          "contact_email": 161
+        },
+        "missing_leg_fields": {
+          "origin": 23,
+          "destination": 24,
+          "departure_date": 77,
+          "departure_time": 98,
+          "time_zone": 132
+        },
+        "total_legs": 316,
+        "multi_leg_requests": 30,
+        "empty_requests": 30
+      }
+    }
+  }
+}

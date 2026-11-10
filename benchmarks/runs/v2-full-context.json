@@ -1,0 +1,18 @@
+{
+  "status": "completed",
+  "started_at": "2026-11-09T22:28:33.661433+00:00",
+  "source_revision": "fc462d35451c01c58c26f1c4e32f1002a59592da",
+  "stages": {
+    "full": {
+      "exit_code": 0,
+      "finished_at": "2026-11-10T04:18:23.407564+00:00"
+    },
+    "test": {
+      "exit_code": 0,
+      "finished_at": "2026-11-10T05:46:17.114002+00:00"
+    }
+  },
+  "updated_at": "2026-11-10T05:46:17.114002+00:00",
+  "phase": "test",
+  "completed_at": "2026-11-10T05:46:17.114002+00:00"
+}

@@ -6,3 +6,7 @@
 /data/experiments/v2-pilot/* -text
 /benchmarks/runs/v2-pilot-training.json -text
 /benchmarks/runs/v2-pilot-config.toml -text
+/benchmarks/runs/v2-full-training.json -text
+/benchmarks/runs/v2-full-config.toml -text
+/benchmarks/runs/v2-full-data-manifest.json -text
+/benchmarks/runs/v2-full-selection.json -text

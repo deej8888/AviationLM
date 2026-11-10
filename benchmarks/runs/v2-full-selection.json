@@ -1,0 +1,18 @@
+{
+  "frozen_at": "2026-11-10T04:18:22.113195+00:00",
+  "config_sha256": "901de0976fc003093f2f27ad485fa499f2bfd81cee0be08f9147fa6ae59fe864",
+  "data_manifest_sha256": "2510e7d23a0b3c9983c27643cb3753870bec207190fb821093c02f8e8c89bed5",
+  "adapter_sha256": "1666afd8f0ace070ac46c0a18dae8c9865404d2d432cf00c92af356aa3568a63",
+  "adapter_files": {
+    "adapter_config.json": "ae0e835094875989a8d5f5040b2c6fb9f47d0b8be4b24d10b935046ff35c6d9c",
+    "run_manifest.json": "3d626f7b9783f1d240c35929c3c4f26318503982638bbdc981d1bd06c1bb4ea1"
+  },
+  "validation_reports": {
+    "artifacts\\robust-v2.1\\full\\validation-reports\\rules.json": "05e976d6241a58ef356927d966077c4bb7eb3586cd541bf8eb8be44221c544f4",
+    "artifacts\\robust-v2.1\\full\\validation-reports\\base-raw.json": "fdd609bee1b12029978a2c5c14d8434a1a16fe7386edd2749034d90f1fd44293",
+    "artifacts\\robust-v2.1\\full\\validation-reports\\base-fewshot-constrained.json": "682699ab43395e6dace0a497dd8af9f574bbc4c748354634c93777c1c419ebe4",
+    "artifacts\\robust-v2.1\\full\\validation-reports\\v2-raw.json": "e9945b6f235e8a6abc3dd15fa87cdfcb13e5b857528d6a8adc365a0955006e46",
+    "artifacts\\robust-v2.1\\full\\validation-reports\\v1-raw.json": "2fca83c534810ebf6a8f27d9ec6ce6c9353880f900f4297e9c98101fdd85a197"
+  },
+  "note": "Frozen experiment candidate, not a production qualification. Test was not scored."
+}

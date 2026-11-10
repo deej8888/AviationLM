@@ -1,0 +1,299 @@
+{
+  "report_version": "1.1",
+  "label": "v2-full-v2-raw",
+  "created_at": "2026-11-10T03:54:48.402019+00:00",
+  "backend": "hf",
+  "model_id": "Qwen/Qwen3-0.6B",
+  "model_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "adapter_loaded": true,
+  "inference": {
+    "device": "cpu",
+    "precision": "bfloat16",
+    "cpu_threads": 12
+  },
+  "adapter_hashes": {
+    "adapter_config.json": "ae0e835094875989a8d5f5040b2c6fb9f47d0b8be4b24d10b935046ff35c6d9c",
+    "adapter_model.safetensors": "1666afd8f0ace070ac46c0a18dae8c9865404d2d432cf00c92af356aa3568a63",
+    "added_tokens.json": "79f6ec6fcc423d3a82bfac8b9033b1daac7b7bce06a5f5f441637b480cc605de",
+    "checkpoint-725\\adapter_config.json": "ae0e835094875989a8d5f5040b2c6fb9f47d0b8be4b24d10b935046ff35c6d9c",
+    "checkpoint-725\\adapter_model.safetensors": "b71ff270f99969a3b6cfc77c674d91edfd56367469955afdabd3d9692f6276ef",
+    "checkpoint-725\\added_tokens.json": "79f6ec6fcc423d3a82bfac8b9033b1daac7b7bce06a5f5f441637b480cc605de",
+    "checkpoint-725\\special_tokens_map.json": "890efa1686cf49870d5018b948316d11c6d9ce121a942803eeb4224dcc7db3f0",
+    "checkpoint-725\\tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "checkpoint-725\\tokenizer_config.json": "3a1306cdaf4228dc827a92649103e7e2d972f73d97fe72e09ffe3666602e6d9b",
+    "checkpoint-725\\trainer_state.json": "f1a311179577160be640144e058df712305d62d8ede60c8acb7e90ad5b6532d4",
+    "checkpoint-725\\vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "checkpoint-750\\adapter_config.json": "ae0e835094875989a8d5f5040b2c6fb9f47d0b8be4b24d10b935046ff35c6d9c",
+    "checkpoint-750\\adapter_model.safetensors": "1666afd8f0ace070ac46c0a18dae8c9865404d2d432cf00c92af356aa3568a63",
+    "checkpoint-750\\added_tokens.json": "79f6ec6fcc423d3a82bfac8b9033b1daac7b7bce06a5f5f441637b480cc605de",
+    "checkpoint-750\\special_tokens_map.json": "890efa1686cf49870d5018b948316d11c6d9ce121a942803eeb4224dcc7db3f0",
+    "checkpoint-750\\tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "checkpoint-750\\tokenizer_config.json": "3a1306cdaf4228dc827a92649103e7e2d972f73d97fe72e09ffe3666602e6d9b",
+    "checkpoint-750\\trainer_state.json": "0ebb30493402340eefbbd4f5765724a88e0e6a16e1aa5293cef5ee22e28918b2",
+    "checkpoint-750\\vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "run_manifest.json": "3d626f7b9783f1d240c35929c3c4f26318503982638bbdc981d1bd06c1bb4ea1",
+    "special_tokens_map.json": "890efa1686cf49870d5018b948316d11c6d9ce121a942803eeb4224dcc7db3f0",
+    "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "tokenizer_config.json": "3a1306cdaf4228dc827a92649103e7e2d972f73d97fe72e09ffe3666602e6d9b",
+    "trainer_state.json": "5ceb26fb217aaf9cdefb3dee6b7339408452db4b96abce8c844f4c9e1164378c",
+    "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+  },
+  "dataset": {
+    "name": "validation.jsonl",
+    "sha256": "476c69a66243d53a76a4958bb69bfa61efe1b6ca266ef0a25cbebffecf058099",
+    "count": 200
+  },
+  "prompt_sha256": "22e2b5db2a5f315d7fb7882cc094eecf28cc01132b4aec15f8973930601f3bda",
+  "generation": {
+    "do_sample": false,
+    "enable_thinking": false,
+    "max_new_tokens": 1024
+  },
+  "metrics": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "tp": 1609,
+    "fp": 0,
+    "fn": 0,
+    "json_validity": 1.0,
+    "schema_validity": 1.0,
+    "exact_match": 1.0
+  },
+  "per_field": {
+    "aircraft_category": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 103,
+      "fp": 0,
+      "fn": 0
+    },
+    "aircraft_preference": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 100,
+      "fp": 0,
+      "fn": 0
+    },
+    "budget": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 63,
+      "fp": 0,
+      "fn": 0
+    },
+    "contact_email": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 101,
+      "fp": 0,
+      "fn": 0
+    },
+    "legs[].departure_date": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 154,
+      "fp": 0,
+      "fn": 0
+    },
+    "legs[].departure_time": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 152,
+      "fp": 0,
+      "fn": 0
+    },
+    "legs[].destination": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 190,
+      "fp": 0,
+      "fn": 0
+    },
+    "legs[].origin": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 197,
+      "fp": 0,
+      "fn": 0
+    },
+    "legs[].time_zone": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 131,
+      "fp": 0,
+      "fn": 0
+    },
+    "passengers": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 155,
+      "fp": 0,
+      "fn": 0
+    },
+    "return_date": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 27,
+      "fp": 0,
+      "fn": 0
+    },
+    "special_requirements": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 121,
+      "fp": 0,
+      "fn": 0
+    },
+    "trip_type": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 115,
+      "fp": 0,
+      "fn": 0
+    }
+  },
+  "diagnostics": {
+    "false_filled_null_slots": 0,
+    "null_slots_in_schema_valid_gold": 972,
+    "requests_with_extra_facts": 0,
+    "scored_schema_valid_requests": 200,
+    "total_requests": 200,
+    "null_slot_false_fill_rate": 0.0,
+    "scope": "Null-slot diagnostics score schema-valid outputs only; inspect validity alongside them."
+  },
+  "scenarios": {
+    "ambiguous": {
+      "requests": 20,
+      "json_valid": 20,
+      "schema_valid": 20,
+      "exact_match": 20,
+      "tp": 94,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "complete": {
+      "requests": 40,
+      "json_valid": 40,
+      "schema_valid": 40,
+      "exact_match": 40,
+      "tp": 450,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "correction": {
+      "requests": 20,
+      "json_valid": 20,
+      "schema_valid": 20,
+      "exact_match": 20,
+      "tp": 127,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "empty": {
+      "requests": 20,
+      "json_valid": 20,
+      "schema_valid": 20,
+      "exact_match": 20,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "multi_leg": {
+      "requests": 20,
+      "json_valid": 20,
+      "schema_valid": 20,
+      "exact_match": 20,
+      "tp": 376,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "negation": {
+      "requests": 20,
+      "json_valid": 20,
+      "schema_valid": 20,
+      "exact_match": 20,
+      "tp": 132,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "sparse": {
+      "requests": 40,
+      "json_valid": 40,
+      "schema_valid": 40,
+      "exact_match": 40,
+      "tp": 225,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "unknown_aircraft": {
+      "requests": 20,
+      "json_valid": 20,
+      "schema_valid": 20,
+      "exact_match": 20,
+      "tp": 205,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "latency_ms": {
+    "median": 6880.888449988561,
+    "mean": 7050.649944500474,
+    "p95": 12346.153899969067,
+    "includes_model_load": false
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "aerolm": "0.1.0",
+      "pydantic": "2.14.3",
+      "torch": "2.9.1",
+      "transformers": "4.57.6",
+      "peft": "0.18.1",
+      "trl": "0.24.0"
+    }
+  },
+  "limitations": [
+    "Synthetic evaluation only; not evidence of real-world dispatch accuracy.",
+    "Invalid schema outputs receive no slot credit.",
+    "No null/empty true-negative credit; leg order is significant."
+  ]
+}
