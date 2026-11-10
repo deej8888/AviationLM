@@ -11,7 +11,7 @@ from tempfile import TemporaryDirectory
 
 from aerolm.backends.rules import RulesBackend
 from aerolm.data.generate import generate_dataset, sha256
-from aerolm.data.robust import generate_robust_split
+from aerolm.data.robust import VERSION, generate_robust_split
 from aerolm.domains.registry import registry
 from aerolm.evaluation import evaluate, load_rows
 from aerolm.prompting import load_demonstrations, with_demonstrations
@@ -31,35 +31,48 @@ class Replay:
         return with_demonstrations(domain, text, self.demonstrations)
 
 
+def versioned_datasets(root: Path, name: str, splits: tuple[str, ...]) -> list[Path]:
+    path = Path("benchmarks/runs") / f"{name}-training.json"
+    if not path.exists():
+        return []
+    training = json.loads(path.read_text(encoding="utf-8"))
+    if training["status"] != "completed":
+        raise SystemExit(f"Published training did not complete: {name}")
+    manifest = training["dataset_manifest"]
+    if manifest["generator_version"] == "2.0":
+        source = Path("data/experiments/v2-pilot")
+        for split in ("train", "validation", "test"):
+            if sha256(source / f"{split}.jsonl") != manifest["splits"][split]["sha256"]:
+                raise SystemExit(f"Archived pilot data changed: {split}")
+    elif manifest["generator_version"] == VERSION:
+        source = root / name
+        source.mkdir()
+        for split in splits:
+            rows = generate_robust_split(
+                split, manifest["splits"][split]["count"], manifest["seed"]
+            )
+            (source / f"{split}.jsonl").write_text(
+                "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+                encoding="utf-8",
+                newline="\n",
+            )
+    else:
+        raise SystemExit(f"Retain the generator source for version {manifest['generator_version']}")
+    datasets = [source / f"{split}.jsonl" for split in splits]
+    for split, dataset in zip(splits, datasets, strict=True):
+        if sha256(dataset) != manifest["splits"][split]["sha256"]:
+            raise SystemExit(f"Versioned dataset differs from completed training: {name}/{split}")
+    return datasets
+
+
 def main():
     directory = Path("benchmarks/results")
     with TemporaryDirectory() as temp:
         root = Path(temp)
         generate_dataset(root / "data")
         datasets = [root / "data/test.jsonl", Path("data/charter_challenge.jsonl")]
-        pilot_manifest = Path("benchmarks/runs/v2-pilot-training.json")
-        if pilot_manifest.exists():
-            manifest = json.loads(pilot_manifest.read_text(encoding="utf-8"))["dataset_manifest"]
-            if manifest["generator_version"] == "2.0":
-                # Preserve the exact pre-canonicalization pilot bytes, not a repaired report.
-                source = Path("data/experiments/v2-pilot")
-                for split in ("train", "validation", "test"):
-                    if sha256(source / f"{split}.jsonl") != manifest["splits"][split]["sha256"]:
-                        raise SystemExit(f"Archived pilot data changed: {split}")
-                dataset = source / "validation.jsonl"
-            else:
-                dataset = root / "validation.jsonl"
-                rows = generate_robust_split(
-                    "validation", manifest["splits"]["validation"]["count"], manifest["seed"]
-                )
-                dataset.write_text(
-                    "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
-                    encoding="utf-8",
-                    newline="\n",
-                )
-            if sha256(dataset) != manifest["splits"]["validation"]["sha256"]:
-                raise SystemExit("Version-2 generator differs from the frozen pilot dataset")
-            datasets.append(dataset)
+        datasets += versioned_datasets(root, "v2-pilot", ("validation",))
+        datasets += versioned_datasets(root, "v2-full", ("validation", "test"))
         by_hash = {sha256(p): p for p in datasets}
         domain = registry.get("charter")
         demonstrations = load_demonstrations(Path("data/charter_demonstrations.jsonl"), domain)
