@@ -2,6 +2,7 @@
 *.jsonl text eol=lf
 *.png binary
 *.safetensors binary
+*.csv.gz binary
 # Preserve the exact historical pilot inputs/config/manifest, including line endings.
 /data/experiments/v2-pilot/* -text
 /benchmarks/runs/v2-pilot-training.json -text

@@ -22,6 +22,25 @@ class SourceEvidence(BaseModel):
     method: str
 
 
+class AdvisoryCheck(BaseModel):
+    kind: str
+    path: str
+    value: JsonValue
+    status: str
+    message: str
+    source: str
+    matches: list[dict[str, str]] = Field(default_factory=list)
+    match_count: int = Field(default=0, ge=0)
+
+
+class ReviewAssessment(BaseModel):
+    data: dict
+    warnings: list[str]
+    evidence: list[SourceEvidence] = Field(default_factory=list)
+    checks: list[AdvisoryCheck] = Field(default_factory=list)
+    requires_review: bool = True
+
+
 class ExtractionResult(BaseModel):
     schema_version: str = "1.0"
     domain: str
@@ -33,6 +52,7 @@ class ExtractionResult(BaseModel):
     latency_ms: float = Field(ge=0)
     requires_review: bool = True
     evidence: list[SourceEvidence] = Field(default_factory=list)
+    checks: list[AdvisoryCheck] = Field(default_factory=list)
 
 
 def strict_json(raw: str) -> dict:
@@ -67,6 +87,30 @@ class ExtractionService:
             raise ValueError("Evidence policy must be warn or reject")
         self.evidence_policy = evidence_policy
 
+    def assess(self, parsed: BaseModel, text: str, spec) -> ReviewAssessment:
+        warnings = spec.review(parsed, text)
+        evidence = spec.evidence(parsed, text) if spec.evidence else []
+        checks = spec.checks(parsed, text) if spec.checks else []
+        unverified = sorted({item["path"] for item in evidence if item["status"] == "unverified"})
+        if unverified:
+            warnings.append("Source evidence not verified for: " + ", ".join(unverified) + ".")
+        warnings.extend(c["message"] for c in checks if c["status"] != "matched")
+        if self.backend.name == "rules":
+            warnings.insert(
+                0, "Rules baseline: limited pattern matching; no language model is loaded."
+            )
+        return ReviewAssessment(
+            data=parsed.model_dump(mode="json"), warnings=warnings, evidence=evidence, checks=checks
+        )
+
+    def review(self, text: str, data: dict, domain_name: str = "charter") -> ReviewAssessment:
+        spec = self.domains.get(domain_name)
+        try:
+            parsed = spec.schema.model_validate_json(json.dumps(data), strict=True)
+        except (ValueError, TypeError, ValidationError) as error:
+            raise ExtractionError("Reviewed data failed schema validation") from error
+        return self.assess(parsed, text, spec)
+
     def extract(self, text: str, domain_name: str = "charter") -> ExtractionResult:
         spec = self.domains.get(domain_name)
         started = perf_counter()
@@ -77,26 +121,19 @@ class ExtractionService:
             parsed = spec.schema.model_validate_json(json.dumps(data), strict=True)
         except (ValueError, ValidationError) as error:
             raise ExtractionError("Model output failed JSON/schema validation") from error
-        warnings = spec.review(parsed, text)
-        evidence = spec.evidence(parsed, text) if spec.evidence else []
-        unverified = sorted({item["path"] for item in evidence if item["status"] == "unverified"})
-        if unverified:
-            if self.evidence_policy == "reject":
-                raise ExtractionError(
-                    "Model output contains facts without recognized source evidence"
-                )
-            warnings.append("Source evidence not verified for: " + ", ".join(unverified) + ".")
-        if self.backend.name == "rules":
-            warnings.insert(
-                0, "Rules baseline: limited pattern matching; no language model is loaded."
-            )
+        assessment = self.assess(parsed, text, spec)
+        if self.evidence_policy == "reject" and any(
+            e.status == "unverified" for e in assessment.evidence
+        ):
+            raise ExtractionError("Model output contains facts without recognized source evidence")
         return ExtractionResult(
             domain=domain_name,
             backend=self.backend.name,
             model_id=getattr(self.backend, "model_id", None),
             adapter_loaded=bool(getattr(self.backend, "adapter_path", None)),
-            data=parsed.model_dump(mode="json"),
-            warnings=warnings,
-            evidence=evidence,
+            data=assessment.data,
+            warnings=assessment.warnings,
+            evidence=assessment.evidence,
+            checks=assessment.checks,
             latency_ms=round((perf_counter() - started) * 1000, 3),
         )

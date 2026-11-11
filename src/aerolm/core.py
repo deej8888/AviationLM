@@ -1,8 +1,9 @@
 """Industry-independent extraction contracts and domain registry."""
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Protocol
+from typing import Protocol
 
 from pydantic import BaseModel
 
@@ -15,6 +16,7 @@ class DomainSpec:
     instructions: str
     review: Callable[[BaseModel, str], list[str]]
     evidence: Callable[[BaseModel, str], list[dict]] | None = None
+    checks: Callable[[BaseModel, str], list[dict]] | None = None
 
     def messages(self, text: str) -> list[dict[str, str]]:
         prompt = (

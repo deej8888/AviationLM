@@ -1,6 +1,7 @@
 """Application domain registration; the extraction contracts remain industry-neutral."""
 
 from aerolm.core import DomainRegistry, DomainSpec
+from aerolm.domains.airports import airport_checks
 from aerolm.domains.charter import CharterRequest, review_warnings
 from aerolm.domains.grounding import source_evidence
 
@@ -21,5 +22,6 @@ registry.register(
         ),
         review=review_warnings,
         evidence=source_evidence,
+        checks=airport_checks,
     )
 )

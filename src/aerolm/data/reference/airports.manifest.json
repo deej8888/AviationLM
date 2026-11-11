@@ -1,0 +1,12 @@
+{
+  "source": "OurAirports airports.csv",
+  "revision": "480cb340247e7dfd6c22e31d309895ef003e3d80",
+  "source_url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/480cb340247e7dfd6c22e31d309895ef003e3d80/airports.csv",
+  "source_sha256": "b311ab030775908769395b6814840f01732b27a5176b85f1a9ed3b5d98ff052b",
+  "license": "Public domain, per https://ourairports.com/data/",
+  "record_count": 19721,
+  "transformation": "Extract uppercase alphabetic 3-letter IATA and 4-letter ICAO codes; retain airport name, municipality, country, type, IATA and ICAO fields; sorted, UTF-8 CSV, gzip mtime=0.",
+  "uncompressed_sha256": "2508fc02b0304b16bfd346ee591da00a55a9c943951d55f734d374dba0fd9a39",
+  "compressed_sha256": "4b6668155ca1449c275327ea9803060aaae3e8ba1457260c788e73528a16d61c",
+  "disclaimer": "Reference snapshot only, without guarantee of accuracy or fitness for use; not authoritative operational or navigation data."
+}

@@ -16,7 +16,7 @@ from aerolm import __version__
 from aerolm.backends.rules import RulesBackend
 from aerolm.domains.registry import registry
 from aerolm.examples import EXAMPLES
-from aerolm.service import ExtractionError, ExtractionResult, ExtractionService
+from aerolm.service import ExtractionError, ExtractionResult, ExtractionService, ReviewAssessment
 from aerolm.settings import Settings
 
 REPORT_DIR = Path("benchmarks/results")
@@ -26,6 +26,10 @@ class ExtractionInput(BaseModel):
     text: str = Field(min_length=1, max_length=12000)
     domain: str = Field(default="charter", max_length=64)
     model_config = {"extra": "forbid"}
+
+
+class ReviewInput(ExtractionInput):
+    data: dict
 
 
 def create_app(
@@ -122,6 +126,17 @@ def create_app(
             raise HTTPException(422, "Request exceeds model limits or is unsupported") from error
         finally:
             request.app.state.gate.release()
+
+    @app.post("/v1/review", response_model=ReviewAssessment, dependencies=[Depends(authorize)])
+    def review(body: ReviewInput, request: Request):
+        if not body.text.strip() or body.domain not in [spec.name for spec in registry.list()]:
+            raise HTTPException(422, "A source request and supported domain are required")
+        try:
+            return request.app.state.service.review(body.text, body.data, body.domain)
+        except ExtractionError as error:
+            raise HTTPException(
+                422, "Reviewed data failed schema validation; check field formats."
+            ) from error
 
     return app
 
