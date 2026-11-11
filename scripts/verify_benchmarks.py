@@ -71,6 +71,11 @@ def main():
         root = Path(temp)
         generate_dataset(root / "data")
         datasets = [root / "data/test.jsonl", Path("data/charter_challenge.jsonl")]
+        independent = Path("data/charter_independent.jsonl")
+        manifest = json.loads(Path("data/charter_independent.manifest.json").read_text())
+        if sha256(independent) != manifest["sha256"]:
+            raise SystemExit("Independent benchmark differs from its frozen manifest")
+        datasets.append(independent)
         datasets += versioned_datasets(root, "v2-pilot", ("validation",))
         datasets += versioned_datasets(root, "v2-full", ("validation", "test"))
         by_hash = {sha256(p): p for p in datasets}
