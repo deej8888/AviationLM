@@ -6,8 +6,9 @@ its synthetic test. The test shares a clause renderer with training; its score d
 establish real-world reliability. The first adapter's separate results are retained below.
 
 **Release status:** completed experimental CPU LoRA runs on November 8 and November 10,
-2026 (America/New_York). Both trained adapters exist locally; weights are not bundled or
-uploaded. Reports, raw predictions, and run manifests are committed. The first adapter
+2026 (America/New_York). Both trained adapters exist locally; weights are not bundled.
+The [v2 adapter is published](https://huggingface.co/deej8888/AeroLM-Qwen3-0.6B-charter-v2).
+Reports, raw predictions, and run manifests are committed. The first adapter
 underperforms rules on the authored challenge; the full v2 adapter has not been evaluated
 on that challenge. All uses require human review.
 

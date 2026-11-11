@@ -36,6 +36,12 @@ codes, word-form passenger counts, reordered fields, custom requirements, and an
 instruction. Its labels are specified independently in `scripts/create_challenge.py`.
 It is a small diagnostic suite, not a statistically representative sample.
 
+`data/charter_independent.jsonl` adds 50 fictional requests authored separately from
+the training generator, with manually specified expected fields. They were machine
+authored and have not received independent human annotation review; the benchmark
+manifest freezes their hash and documents these limits. They are a small diagnostic
+set, not representative real operations data.
+
 ## Reproducibility
 
 Python's local `random.Random` instance is seeded by generator version, seed, and split.
@@ -48,7 +54,7 @@ directory and checks committed scores and data hashes.
 ## Limits and next data work
 
 English only. The generator uses a deliberately small vocabulary and mostly explicit
-slot wording. Its training set does not yet teach multi-leg or email-thread correction
+slot wording. Its original training set does not yet teach multi-leg or email-thread correction
 handling; those appear in diagnostic evaluation. It omits attachments, actual aircraft
 availability, performance limits, permits, NOTAMs, weather, duty limits, and time-zone
 conversion. Broad, independent synthetic authoring and double-reviewed annotations are

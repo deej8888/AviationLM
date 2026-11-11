@@ -12,7 +12,7 @@ improves extraction. The engine is organized around domain contracts so other av
 workflows and industries can share the same inference and validation path.
 
 > **Release status:** functioning rules demo, HF inference, and two completed CPU LoRA experiments.
-> No fine-tuned weights are bundled. The newer adapter scored 98.57% F1 on a controlled
+> No fine-tuned weights are bundled. The [v2 LoRA adapter](https://huggingface.co/deej8888/AeroLM-Qwen3-0.6B-charter-v2) is available separately. It scored 98.57% F1 on a controlled
 > 300-request synthetic test. The first adapter underperformed rules on the authored
 > challenge. All models are experimental and require human review.
 
@@ -37,7 +37,8 @@ npm run dev
 ```
 
 Open **http://127.0.0.1:3000**. API documentation: **http://127.0.0.1:8000/docs**.
-Load a synthetic example, extract, inspect the overview or JSON, and download the result.
+Load a synthetic example, extract, inspect and correct the result, recheck changes,
+and confirm your review before copying or downloading JSON.
 The dashboard's Evaluations tab reads committed reports from the API. It never displays
 invented fine-tuning scores. Run the API from the repository root to load those reports.
 
@@ -93,8 +94,9 @@ and `requires_review: true`:
 
 Unknowns stay null or empty. City names do not select an airport; relative dates have no
 implicit current-date reference. Round trips use the outbound leg plus `return_date`;
-multi-leg requests use ordered `legs`. Airport codes are syntax-checked, not verified
-against a directory. Explicit ISO/long-form dates need a year; ambiguous numeric dates
+multi-leg requests use ordered `legs`. Airport codes are syntax-checked and compared
+against a bundled public-domain OurAirports snapshot. A reference match is advisory;
+it does not confirm availability or suitability. Explicit ISO/long-form dates need a year; ambiguous numeric dates
 remain unresolved. UTC/Zulu and explicitly local times are preserved without conversion.
 
 ## Architecture
@@ -190,7 +192,7 @@ Completed reports and raw predictions go to `benchmarks/results/`, with the meas
 comparison in `artifacts/full-cpu/comparison.json`. `--activate` writes an ignored local
 `.env` selecting the adapter only after training/evaluation finish and a real demo
 extraction passes schema validation. Existing unrelated `.env` values are preserved.
-No trained weights are committed or uploaded. The CPU trainer can omit expensive token
+No trained weights from that first experiment are committed or uploaded. The CPU trainer can omit expensive token
 entropy/accuracy logging while preserving the identical supervised objective; held-out
 extraction metrics remain the quality measure.
 
@@ -221,6 +223,28 @@ all involved lowercase airport codes withheld from training. The test shares a c
 renderer and vocabulary with training; it does not establish real-world reliability.
 See the [v2 guide](docs/EXPERIMENT_V2.md) for the pilot, full results, raw outputs,
 failure analysis, and the evidence-ordering reproducibility correction.
+
+### Separately authored diagnostic benchmark
+
+We evaluated all five variants on 50 fictional requests authored separately from the
+training generator. These machine-authored labels have **not** received independent
+human review, and this small diagnostic set is not representative of real email.
+
+| Variant | Field F1 | JSON valid | Schema valid | Exact requests |
+| --- | ---: | ---: | ---: | ---: |
+| Rules | 90.91% | 100% | 100% | 26/50 |
+| Qwen base, raw | 0% | 0% | 0% | 0/50 |
+| Qwen base, examples and constrained JSON | 69.05% | 100% | 100% | 5/50 |
+| Qwen + LoRA v1 | 59.49% | 100% | 82% | 0/50 |
+| Qwen + LoRA v2 | 92.27% | 100% | 94% | 35/50 |
+
+Zero for the raw base means no response passed JSON validation; it does not mean
+the model understood no facts. Schema-invalid responses receive no slot credit.
+The v2 model missed a three-leg itinerary, made a midnight conversion error, and
+truncated an airport code. Some labels warrant human review, including how to represent
+explicitly unwanted services. See [predictions](benchmarks/results/) and the
+[frozen dataset](data/charter_independent.jsonl). Do not tune against this set
+and then claim it remains an unseen evaluation.
 
 ### CUDA LoRA / QLoRA
 
@@ -368,6 +392,7 @@ not repaired before scoring, and runtime failures stop evaluation rather than di
 | `GET /v1/examples` | Synthetic demonstration inputs |
 | `GET /v1/benchmarks` | Committed measured reports |
 | `POST /v1/extract` | Validated extraction with review warnings |
+| `POST /v1/review` | Validate edited data and recompute source and airport checks |
 
 For Qwen inference, install `--extra ml`, then place this in root `.env`:
 
@@ -386,6 +411,8 @@ downloads public weights and requires considerably more RAM/time than rules mode
 Use `cuda` or `auto` when appropriate. Configuration is fixed at startup; restart to
 switch backends. Missing ML packages, absent CUDA when requested, or mismatched/incomplete
 adapter manifests fail explicitly. There is no automatic fallback to rules.
+Download the [published v2 adapter](https://huggingface.co/deej8888/AeroLM-Qwen3-0.6B-charter-v2)
+as described in its model card, then point `AEROLM_ADAPTER_PATH` at the downloaded directory.
 
 The API rejects blank text, unknown fields/domains, and messages over 12,000 characters.
 HF additionally rejects schema-plus-input prompts over the configured token budget.
