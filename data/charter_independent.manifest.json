@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "count": 50,
+  "sha256": "9d8592ac6603941295ff5ee79cb2dbc5deadc305e93da030d88ea9d32feccb80",
+  "provenance": "synthetic",
+  "license": "CC0-1.0",
+  "authoring": "Hand-authored fictional requests and manually specified target facts; independent of training generators, model outputs, and rules.",
+  "independent_human_reviewed": false,
+  "purpose": "Frozen diagnostic set; dates and data are fictional. Not representative of real operational email."
+}
