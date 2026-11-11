@@ -27,6 +27,34 @@ export interface ExtractionResult {
   warnings: string[];
   latency_ms: number;
   requires_review: boolean;
+  evidence: SourceEvidence[];
+  checks: AdvisoryCheck[];
+}
+export interface SourceEvidence {
+  path: string;
+  value: unknown;
+  status: "matched" | "unverified";
+  quote: string | null;
+  start: number | null;
+  end: number | null;
+  method: string;
+}
+export interface AdvisoryCheck {
+  kind: string;
+  path: string;
+  value: unknown;
+  status: string;
+  message: string;
+  source: string;
+  matches: { name: string; municipality: string; country: string; type: string; icao_code: string; iata_code: string }[];
+  match_count: number;
+}
+export interface ReviewAssessment {
+  data: CharterData;
+  warnings: string[];
+  evidence: SourceEvidence[];
+  checks: AdvisoryCheck[];
+  requires_review: boolean;
 }
 export interface Example {
   id: string;

@@ -1350,3 +1350,35 @@ td small {
     transition: none !important;
   }
 }
+
+.review-workspace { margin-top: 20px; }
+.review-content { padding: 22px 26px; }
+.review-intro, .review-disclaimer, .review-hint { color: #727a80; font-size: 12px; line-height: 1.6; }
+.review-intro { margin: 0 0 18px; }
+.review-leg { border: 1px solid #e5e8e7; padding: 18px; margin: 0 0 12px; }
+.review-leg legend { padding: 0 6px; font-size: 12px; font-weight: 700; }
+.review-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.review-details { margin: 20px 0; }
+.review-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-size: 11px; font-weight: 600; }
+.review-field input, .review-field select { width: 100%; min-width: 0; padding: 10px; border: 1px solid #d7dddb; border-radius: 4px; background: #fff; color: #222e2a; font: inherit; font-size: 13px; }
+.review-field input:focus-visible, .review-field select:focus-visible { outline: 2px solid #bd5d36; outline-offset: 2px; }
+.review-evidence { display: flex; flex-direction: column; gap: 3px; font-size: 10px; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
+.source-match { color: #42705b; }
+.source-missing { color: #a15a34; }
+.review-status { color: #a15a34; font-size: 10px; font-weight: 700; letter-spacing: .05em; }
+.review-status.complete { color: #42705b; }
+.review-actions { display: flex; align-items: center; gap: 18px; margin: 20px 0; }
+.secondary-button { border: 1px solid #bd5d36; background: #fff; color: #9d4d2f; border-radius: 4px; padding: 10px 15px; cursor: pointer; }
+.review-text-button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 0; border: 0; background: none; color: #a45231; font-size: 11px; font-weight: 600; cursor: pointer; }
+.review-leg .review-text-button { margin-top: 8px; }
+.review-requirements { border-top: 1px solid #e5e8e7; padding-top: 16px; font-size: 12px; }
+.review-requirement { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.review-requirement .review-field { flex: 1; }
+.review-confirmation { display: flex; align-items: flex-start; gap: 8px; margin: 18px 0; font-size: 12px; line-height: 1.5; }
+.review-disclaimer { margin: 14px 0 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (max-width: 700px) {
+  .review-content { padding: 18px; }
+  .review-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) { .review-fields { grid-template-columns: 1fr; } }

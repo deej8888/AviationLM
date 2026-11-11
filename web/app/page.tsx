@@ -23,7 +23,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
-import type { Example, ExtractionResult, Health, Report } from "@/lib/types";
+import type { CharterData, Example, ExtractionResult, Health, Report, ReviewAssessment } from "@/lib/types";
 
 import { JsonView } from "@/components/json-view";
 import { RouteGraphic } from "@/components/route-graphic";
@@ -31,6 +31,7 @@ import { Sidebar } from "@/components/sidebar";
 import { CharterOverview } from "@/components/charter-overview";
 import { Evaluations } from "@/components/evaluations";
 import { Pipeline } from "@/components/pipeline";
+import { ReviewWorkspace } from "@/components/review-workspace";
 
 const FIRST =
   "Subject: Charter quote / TEB to MIA\n\nHi charter desk,\n\nPlease quote a round trip TEB to MIA on 2027-03-18 at 09:30 local for 6 pax. Return 2027-03-21.\n\nPrefer a Citation Latitude, or a comparable super midsize jet. WiFi and catering required. Budget USD 35,000.\n\nPlease reply to dispatch@meridian.example.\nThanks,\nAlex";
@@ -59,6 +60,13 @@ export default function Home() {
   const [reports, setReports] = useState<Report[]>([]);
   const [schema, setSchema] = useState<unknown>(null);
   const [result, setResult] = useState<ExtractionResult | null>(null);
+  const [draft, setDraft] = useState<CharterData | null>(null);
+  const [assessment, setAssessment] = useState<ReviewAssessment | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [confirmedAt, setConfirmedAt] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState("");
   const [view, setView] = useState("overview");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -95,10 +103,43 @@ export default function Home() {
     setSection(name);
     setMobileNav(false);
   };
+  function clearReview() {
+    setDraft(null); setAssessment(null); setDirty(false); setAcknowledged(false);
+    setConfirmedAt(null); setReviewError("");
+  }
+  function initialAssessment(value: ExtractionResult): ReviewAssessment {
+    return { data: value.data, warnings: value.warnings, evidence: value.evidence ?? [],
+      checks: value.checks ?? [], requires_review: value.requires_review };
+  }
+  function changeDraft(value: CharterData) {
+    setDraft(value); setDirty(true); setAssessment(null); setAcknowledged(false);
+    setConfirmedAt(null); setReviewError("");
+  }
+  function resetEdits() {
+    if (!result) return;
+    setDraft(structuredClone(result.data)); setAssessment(initialAssessment(result));
+    setDirty(false); setAcknowledged(false); setConfirmedAt(null); setReviewError("");
+  }
+  async function checkReview() {
+    if (!draft) return;
+    setChecking(true); setReviewError("");
+    try {
+      const data = { ...draft, special_requirements: draft.special_requirements.map((v) => v.trim()).filter(Boolean) };
+      const reviewed = await api<ReviewAssessment>("v1/review", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, domain: "charter", data }),
+      });
+      setDraft(reviewed.data); setAssessment(reviewed); setDirty(false);
+      setAcknowledged(false); setConfirmedAt(null);
+    } catch (failure) {
+      setReviewError(failure instanceof Error ? failure.message : "Review failed.");
+    } finally { setChecking(false); }
+  }
   async function extract() {
     setBusy(true);
     setError("");
     setResult(null);
+    clearReview();
     try {
       const data = await api<ExtractionResult>("v1/extract", {
         method: "POST",
@@ -107,6 +148,8 @@ export default function Home() {
       });
       if (mounted.current) {
         setResult(data);
+        setDraft(structuredClone(data.data));
+        setAssessment(initialAssessment(data));
         setView("overview");
       }
       api<Health>("healthz")
@@ -124,21 +167,24 @@ export default function Home() {
     setText(example.text);
     setSelected(example.id);
     setResult(null);
+    clearReview();
     setError("");
   }
   async function copy() {
-    if (!result) return;
+    if (!assessment || !confirmedAt) return;
     try {
-      await navigator.clipboard.writeText(JSON.stringify(result.data, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(assessment.data, null, 2));
       setToast("JSON copied to clipboard");
     } catch {
       setToast("Clipboard unavailable. Use Download JSON instead.");
     }
   }
   function download() {
-    if (!result) return;
+    if (!result || !assessment || !confirmedAt) return;
     const url = URL.createObjectURL(
-      new Blob([JSON.stringify(result, null, 2)], { type: "application/json" }),
+      new Blob([JSON.stringify({ ...result, ...assessment, original_data: result.data,
+        review: { status: "confirmed_by_user", confirmed_at: confirmedAt,
+          modified: JSON.stringify(result.data) !== JSON.stringify(assessment.data) } }, null, 2)], { type: "application/json" }),
     );
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -295,7 +341,7 @@ export default function Home() {
                     <select
                       id="example"
                       value={selected}
-                      disabled={busy || !examples.length}
+                      disabled={busy || checking || !examples.length}
                       onChange={(e) => {
                         const example = examples.find(
                           (item) => item.id === e.target.value,
@@ -322,10 +368,11 @@ export default function Home() {
                   <div className="editor-label">
                     <label htmlFor="request">REQUEST BODY</label>
                     <button
-                      disabled={busy}
+                      disabled={busy || checking}
                       onClick={() => {
                         setText("");
                         setResult(null);
+                        clearReview();
                         setSelected("");
                         setError("");
                       }}
@@ -338,10 +385,11 @@ export default function Home() {
                     value={text}
                     maxLength={12000}
                     spellCheck={false}
-                    disabled={busy}
+                    disabled={busy || checking}
                     onChange={(e) => {
                       setText(e.target.value);
                       setResult(null);
+                      clearReview();
                       setSelected("");
                       setError("");
                     }}
@@ -364,7 +412,7 @@ export default function Home() {
                     <button
                       className="primary-button"
                       onClick={extract}
-                      disabled={busy || !text.trim()}
+                      disabled={busy || checking || !text.trim()}
                     >
                       {busy ? (
                         <>
@@ -395,7 +443,7 @@ export default function Home() {
                       <button
                         className="icon-button"
                         onClick={copy}
-                        disabled={!result}
+                        disabled={!result || !confirmedAt || !assessment}
                         aria-label="Copy JSON"
                       >
                         <Copy size={15} />
@@ -403,7 +451,7 @@ export default function Home() {
                       <button
                         className="icon-button"
                         onClick={download}
-                        disabled={!result}
+                        disabled={!result || !confirmedAt || !assessment}
                         aria-label="Download JSON"
                       >
                         <ArrowDownToLine size={16} />
@@ -427,7 +475,7 @@ export default function Home() {
                           : tab[0].toUpperCase() + tab.slice(1)}
                       </button>
                     ))}
-                    {result && (
+                    {result && !dirty && (
                       <span className="valid-badge">
                         <CheckCheck size={12} /> Validated
                       </span>
@@ -474,9 +522,9 @@ export default function Home() {
                       </div>
                     </div>
                   ) : view === "json" ? (
-                    <JsonView value={result.data} />
+                    <JsonView value={draft ?? result.data} />
                   ) : (
-                    <CharterOverview result={result} />
+                    <CharterOverview result={{ ...result, data: draft ?? result.data }} />
                   )}
                   <div className="output-footer">
                     <span className="tiny-dot" />
@@ -486,13 +534,18 @@ export default function Home() {
                   </div>
                 </section>
               </div>
+              {result && draft && <ReviewWorkspace draft={draft} assessment={assessment} dirty={dirty}
+                busy={checking} acknowledged={acknowledged} confirmedAt={confirmedAt} error={reviewError}
+                onChange={changeDraft} onCheck={checkReview} onReset={resetEdits}
+                onAcknowledge={(value) => { setAcknowledged(value); if (!value) setConfirmedAt(null); }}
+                onConfirm={() => setConfirmedAt(new Date().toISOString())} />}
               {result && (
                 <div className="review-box">
                   <TriangleAlert size={18} />
                   <div>
                     <strong>Review before operational use</strong>
                     <ul>
-                      {result.warnings.map((warning) => (
+                      {(assessment?.warnings ?? ["Changes have not been checked yet."]).map((warning) => (
                         <li key={warning}>{warning}</li>
                       ))}
                     </ul>

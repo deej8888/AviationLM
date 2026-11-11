@@ -11,7 +11,7 @@ async function proxy(
   const target = path.join("/");
   const allowed =
     request.method === "POST"
-      ? target === "v1/extract"
+      ? ["v1/extract", "v1/review"].includes(target)
       : [
           "healthz",
           "v1/domains",

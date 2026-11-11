@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 test("extracts a request through the actual API and exposes validated JSON", async ({
   page,
@@ -9,16 +10,20 @@ test("extracts a request through the actual API and exposes validated JSON", asy
     .getByRole("button", { name: "Extract request", exact: true })
     .click();
   await expect(page.getByText("Validated", { exact: true })).toBeVisible();
-  await expect(page.getByText("TEB", { exact: true })).toBeVisible();
-  await expect(page.getByText("MIA", { exact: true })).toBeVisible();
+  const output = page.getByRole("region", { name: "Extraction result" });
+  await expect(output.getByText("TEB", { exact: true })).toBeVisible();
+  await expect(output.getByText("MIA", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("Citation Latitude", { exact: true }),
+    output.getByText("Citation Latitude", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByText("Review before operational use", { exact: true }),
   ).toBeVisible();
   await page.getByRole("tab", { name: "JSON", exact: true }).click();
   await expect(page.locator(".json-view")).toContainText('"passengers": 6');
+  await expect(page.getByRole("button", { name: "Download JSON" })).toBeDisabled();
+  await page.getByLabel("I reviewed the extracted and missing details against the request.").check();
+  await page.getByRole("button", { name: "Confirm review", exact: true }).click();
   const downloadPromise = page.waitForEvent("download");
   await page
     .getByRole("button", { name: "Download JSON", exact: true })
@@ -32,6 +37,31 @@ test("extracts a request through the actual API and exposes validated JSON", asy
     path: info.outputPath("workspace.png"),
     fullPage: true,
   });
+});
+
+test("allows corrections, rechecks them, and invalidates prior confirmation", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Extract request", exact: true }).click();
+  await expect(page.getByLabel("Leg 1 destination")).toHaveValue("MIA");
+  await page.getByLabel("Leg 1 destination").fill("KBOB");
+  await page.getByLabel("Passengers", { exact: true }).fill("8");
+  await expect(page.getByRole("button", { name: "Download JSON" })).toBeDisabled();
+  await page.getByRole("button", { name: "Check changes" }).click();
+  await expect(page.getByText("KBOB was not found in the airport reference", { exact: false }).first()).toBeVisible();
+  await page.getByLabel("I reviewed the extracted and missing details against the request.").check();
+  await page.getByRole("button", { name: "Confirm review", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Download JSON" })).toBeEnabled();
+  const event = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download JSON" }).click();
+  const downloaded = await event;
+  const content = JSON.parse(await readFile((await downloaded.path())!, "utf8"));
+  expect(content.data.legs[0].destination).toBe("KBOB");
+  expect(content.data.passengers).toBe(8);
+  expect(content.original_data.passengers).toBe(6);
+  expect(content.review.status).toBe("confirmed_by_user");
+  expect(content.review.modified).toBe(true);
+  await page.getByLabel("Passengers", { exact: true }).fill("9");
+  await expect(page.getByRole("button", { name: "Download JSON" })).toBeDisabled();
 });
 
 test("clears stale output and handles ambiguity without guessed airports", async ({
